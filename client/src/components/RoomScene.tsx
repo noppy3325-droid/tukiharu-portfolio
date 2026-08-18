@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookHeart, Camera, ExternalLink, FolderHeart, Monitor, Sparkles } from "lucide-react";
 import { useState } from "react";
-import RoomTerminal from "./RoomTerminal";
 
 type Work = { id: number; title: string; summary: string; category: string; url: string | null; accent: string };
 type Book = { id: number; title: string; author: string; note: string; coverColor: string };
@@ -26,47 +25,36 @@ export default function RoomScene({ works, books, gallery }: RoomSceneProps) {
 
   return (
     <>
-      <section className="room-stage" aria-label="クリックできるわたしの部屋">
-        <div className="room-halo room-halo-one" />
-        <div className="room-halo room-halo-two" />
-        <div className="room-wallpaper"><span>✦</span><span>♡</span><span>✦</span><span>♡</span></div>
-
-        <div className="poster-frame" aria-label="Mellow daysポスター">
-          <span className="poster-sun">☼</span>
-          <span>mellow<br />days</span>
+      <section className="desktop-stage" aria-label="クリックできるデスクトップ画面">
+        <div className="desktop-menubar"><span className="desktop-brand"><Sparkles size={14} /> my quiet desktop</span><span>08 / 18 · slow morning</span></div>
+        <div className="desktop-sky" aria-hidden="true"><i /><i /><i /></div>
+        <div className="desktop-icons" aria-label="デスクトップのフォルダ">
+          <button className="desktop-icon" onClick={() => setActiveDialog("works")}><span className="desktop-icon-art icon-work"><Monitor /></span><b>my works</b><small>ポートフォリオ</small></button>
+          <button className="desktop-icon" onClick={() => setActiveDialog("books")}><span className="desktop-icon-art icon-book"><BookHeart /></span><b>little library</b><small>お気に入りの本</small></button>
+          <button className="desktop-icon" onClick={() => setActiveDialog("gallery")}><span className="desktop-icon-art icon-photo"><Camera /></span><b>photo album</b><small>撮影の記録</small></button>
         </div>
-
-        <div className="window-scene" aria-hidden="true">
-          <span className="cloud cloud-a" /><span className="cloud cloud-b" />
-          <div className="window-cross" />
+        <div className="desktop-monitor-shell">
+          <div className="desktop-monitor-screen">
+            <div className="window-titlebar"><span><i /><i /><i /></span><b>home — little room</b><em>⌁</em></div>
+            <div className="desktop-welcome">
+              <p className="desktop-eyebrow">WELCOME TO MY DESKTOP</p>
+              <h2>わたしの、<br /><strong>ちいさな部屋。</strong></h2>
+              <p>つくったもの、好きなことば、<br />とっておきの瞬間を、ここに。</p>
+              <div className="desktop-shortcuts">
+                <button onClick={() => setActiveDialog("works")}><FolderHeart size={17} />作品をひらく</button>
+                <button onClick={() => setActiveDialog("gallery")}><Camera size={17} />写真をみる</button>
+              </div>
+            </div>
+            <div className="desktop-sticky"><span>today&apos;s note</span><b>ゆっくり、
+            ひとつずつ。</b><i>✦</i></div>
+          </div>
+          <div className="monitor-stand" /><div className="monitor-base" />
         </div>
-
-        <div className="plant" aria-hidden="true"><span className="plant-leaf leaf-one" /><span className="plant-leaf leaf-two" /><span className="plant-leaf leaf-three" /><span className="plant-pot" /></div>
-
-        <button className="room-object bookshelf object-bounce" onClick={() => setActiveDialog("books")} aria-label="本棚を開いておすすめ本を見る">
-          <span className="object-label"><BookHeart size={15} />本棚をひらく</span>
-          <span className="bookcase-top" />
-          <span className="bookcase-inner"><i className="book book-pink" /><i className="book book-yellow" /><i className="book book-mint" /><i className="book book-lilac" /><b className="shelf-line shelf-one" /><i className="book book-peach book-low" /><i className="book book-blue book-low" /><i className="book book-rose book-low" /><b className="shelf-line shelf-two" /></span>
-        </button>
-
-        <button className="room-object camera object-bounce" onClick={() => setActiveDialog("gallery")} aria-label="カメラを開いて写真を見る">
-          <span className="object-label"><Camera size={15} />写真を見る</span>
-          <span className="camera-body"><span className="camera-flash" /><span className="camera-lens"><i /></span></span>
-        </button>
-
-        <div className="teddy" aria-label="くまのぬいぐるみ" role="img"><span className="teddy-ear ear-left" /><span className="teddy-ear ear-right" /><span className="teddy-head"><i className="teddy-eye eye-left" /><i className="teddy-eye eye-right" /><b className="teddy-nose" /></span><span className="teddy-body" /></div>
-
-        <button className="room-object desk object-bounce" onClick={() => setActiveDialog("works")} aria-label="PCを開いて作品を見る">
-          <span className="object-label"><Monitor size={15} />PCをひらく</span>
-          <span className="desk-top" /><span className="desk-leg leg-left" /><span className="desk-leg leg-right" />
-          <span className="monitor"><span className="monitor-screen"><i>hello!</i><b>✦</b><em>♡</em></span><span className="monitor-neck" /><span className="monitor-foot" /></span>
-          <span className="desk-mug">♥</span>
-          <span className="notebook" />
-        </button>
-
-        <div className="rug" aria-hidden="true"><span>⋆ ｡° ✩</span></div>
-        <RoomTerminal />
-        <p className="room-hint"><Sparkles size={15} /> 気になるものを、そっとクリックしてね</p>
+        <div className="desktop-dock" aria-label="ショートカット">
+          <button onClick={() => setActiveDialog("works")} aria-label="作品一覧を開く"><Monitor /></button>
+          <button onClick={() => setActiveDialog("books")} aria-label="本棚を開く"><BookHeart /></button>
+          <button onClick={() => setActiveDialog("gallery")} aria-label="ギャラリーを開く"><Camera /></button>
+        </div>
       </section>
 
       <Dialog open={activeDialog === "works"} onOpenChange={(open) => !open && setActiveDialog(null)}>

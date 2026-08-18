@@ -1,0 +1,7 @@
+.admin-desk button[class*="bg-"] {
+  background: #4f8eaa !important;
+}
+
+.admin-desk button[class*="bg-"]:hover {
+  background: #3e7892 !important;
+}
