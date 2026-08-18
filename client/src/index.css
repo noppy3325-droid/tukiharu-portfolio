@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "./korean-room.css";
 @import "./admin-blue.css";
+@import "./desktop-flat.css";
 
 @custom-variant dark (&:is(.dark *));
 

@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { BookHeart, Camera, ExternalLink, FolderHeart, Monitor, Sparkles } from "lucide-react";
+import { BookHeart, Camera, ExternalLink, FileText, FolderHeart, Monitor, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { Link } from "wouter";
 
 type Work = { id: number; title: string; summary: string; category: string; url: string | null; accent: string };
 type Book = { id: number; title: string; author: string; note: string; coverColor: string };
@@ -32,29 +32,16 @@ export default function RoomScene({ works, books, gallery }: RoomSceneProps) {
           <button className="desktop-icon" onClick={() => setActiveDialog("works")}><span className="desktop-icon-art icon-work"><Monitor /></span><b>my works</b><small>ポートフォリオ</small></button>
           <button className="desktop-icon" onClick={() => setActiveDialog("books")}><span className="desktop-icon-art icon-book"><BookHeart /></span><b>little library</b><small>お気に入りの本</small></button>
           <button className="desktop-icon" onClick={() => setActiveDialog("gallery")}><span className="desktop-icon-art icon-photo"><Camera /></span><b>photo album</b><small>撮影の記録</small></button>
+          <Link href="/blog" className="desktop-icon"><span className="desktop-icon-art icon-note"><FileText /></span><b>room notes</b><small>日々のノート</small></Link>
         </div>
-        <div className="desktop-monitor-shell">
-          <div className="desktop-monitor-screen">
-            <div className="window-titlebar"><span><i /><i /><i /></span><b>home — little room</b><em>⌁</em></div>
-            <div className="desktop-welcome">
-              <p className="desktop-eyebrow">WELCOME TO MY DESKTOP</p>
-              <h2>わたしの、<br /><strong>ちいさな部屋。</strong></h2>
-              <p>つくったもの、好きなことば、<br />とっておきの瞬間を、ここに。</p>
-              <div className="desktop-shortcuts">
-                <button onClick={() => setActiveDialog("works")}><FolderHeart size={17} />作品をひらく</button>
-                <button onClick={() => setActiveDialog("gallery")}><Camera size={17} />写真をみる</button>
-              </div>
-            </div>
-            <div className="desktop-sticky"><span>today&apos;s note</span><b>ゆっくり、
-            ひとつずつ。</b><i>✦</i></div>
-          </div>
-          <div className="monitor-stand" /><div className="monitor-base" />
+        <div className="desktop-welcome-panel">
+          <p className="desktop-eyebrow">WELCOME TO MY DESKTOP</p>
+          <h2>わたしの、<br /><strong>ちいさな部屋。</strong></h2>
+          <p>つくったもの、好きなことば、<br />とっておきの瞬間を、ここに。</p>
+          <span className="desktop-panel-hint">左のアイコンから、気になるものをひらいてね。</span>
         </div>
-        <div className="desktop-dock" aria-label="ショートカット">
-          <button onClick={() => setActiveDialog("works")} aria-label="作品一覧を開く"><Monitor /></button>
-          <button onClick={() => setActiveDialog("books")} aria-label="本棚を開く"><BookHeart /></button>
-          <button onClick={() => setActiveDialog("gallery")} aria-label="ギャラリーを開く"><Camera /></button>
-        </div>
+        <div className="desktop-sticky"><span>today&apos;s note</span><b>ゆっくり、
+        ひとつずつ。</b><i>✦</i></div>
       </section>
 
       <Dialog open={activeDialog === "works"} onOpenChange={(open) => !open && setActiveDialog(null)}>

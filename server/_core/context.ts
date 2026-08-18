@@ -11,6 +11,14 @@ export type TrpcContext = {
   isAdmin?: boolean;
 };
 
+export function getAdminSessionToken(
+  rawCookieHeader: string | undefined,
+  parsedCookies?: Record<string, string | undefined>
+) {
+  const headerCookies = parse(rawCookieHeader || "");
+  return headerCookies[ADMIN_SESSION_COOKIE] || parsedCookies?.[ADMIN_SESSION_COOKIE];
+}
+
 export async function createContext(
   opts: CreateExpressContextOptions
 ): Promise<TrpcContext> {
@@ -23,11 +31,17 @@ export async function createContext(
     user = null;
   }
 
-  const cookies = opts.req.cookies ?? parse(opts.req.headers.cookie || "");
+  // Some hosting adapters expose an empty `req.cookies` object even when the
+  // incoming Cookie header is present. Parse the raw header first so a valid
+  // administrator session is never hidden by that empty object.
+  const adminSessionToken = getAdminSessionToken(
+    opts.req.headers.cookie,
+    opts.req.cookies as Record<string, string | undefined> | undefined
+  );
   return {
     req: opts.req,
     res: opts.res,
     user,
-    isAdmin: verifyAdminSession(cookies[ADMIN_SESSION_COOKIE]),
+    isAdmin: verifyAdminSession(adminSessionToken),
   };
 }

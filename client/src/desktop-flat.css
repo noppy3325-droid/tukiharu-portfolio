@@ -1,0 +1,88 @@
+.desktop-stage {
+  min-height: 610px;
+}
+
+.desktop-icons {
+  left: clamp(1rem, 5vw, 4.5rem);
+  top: 96px;
+  grid-template-columns: repeat(2, 94px);
+  gap: 1.35rem 1rem;
+}
+
+.desktop-icon {
+  text-decoration: none;
+}
+
+.icon-note {
+  color: #628fa8;
+  background: #e1edf4;
+}
+
+.desktop-welcome-panel {
+  position: absolute;
+  z-index: 3;
+  top: 132px;
+  left: 50%;
+  width: min(52vw, 590px);
+  transform: translateX(-50%);
+  padding: clamp(1rem, 2.5vw, 2rem) clamp(1.3rem, 3vw, 2.8rem);
+  color: #3c5a68;
+}
+
+.desktop-welcome-panel > p:not(.desktop-eyebrow) {
+  margin: .9rem 0 1.15rem;
+  color: #68828e;
+  font-size: clamp(.72rem, 1.2vw, .9rem);
+  line-height: 1.85;
+}
+
+.desktop-welcome-panel h2 {
+  margin: 0;
+  color: #3c5a68;
+  font-size: clamp(2rem, 4.1vw, 3.7rem);
+  line-height: 1.12;
+  font-weight: 900;
+  letter-spacing: -.06em;
+}
+
+.desktop-welcome-panel h2 strong {
+  color: #5f9db8;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.desktop-panel-hint {
+  display: inline-flex;
+  border-top: 1px solid rgba(103, 153, 175, .25);
+  padding-top: .75rem;
+  color: #678795;
+  font: 500 .62rem "DM Mono", monospace;
+  letter-spacing: .04em;
+}
+
+.desktop-sticky {
+  z-index: 4;
+  right: clamp(1.2rem, 4vw, 4rem);
+  bottom: 2.2rem;
+}
+
+@media (max-width: 760px) {
+  .desktop-stage { min-height: 570px; }
+  .desktop-icons {
+    left: 1rem;
+    top: 86px;
+    grid-template-columns: 64px;
+    gap: .75rem;
+  }
+  .desktop-welcome-panel {
+    top: 158px;
+    left: 60%;
+    width: min(63vw, 310px);
+    padding: .5rem;
+  }
+  .desktop-welcome-panel h2 { font-size: clamp(1.72rem, 7vw, 2.55rem); }
+  .desktop-welcome-panel h2 strong { white-space: normal; }
+  .desktop-welcome-panel > p:not(.desktop-eyebrow) { font-size: .62rem; }
+  .desktop-panel-hint { display: none; }
+  .desktop-sticky { right: .8rem; bottom: 1rem; }
+}
