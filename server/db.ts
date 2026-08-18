@@ -1,6 +1,6 @@
 import { and, count, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { adminCredentials, blogComments, blogLikes, blogPosts, books, galleryItems, InsertUser, users, works } from "../drizzle/schema";
+import { adminCredentials, blogComments, blogLikes, blogPosts, books, galleryItems, InsertUser, siteSettings, users, works } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -91,6 +91,10 @@ async function requireDb() {
 
 export async function getAdminCredential() { const db = await requireDb(); const rows = await db.select().from(adminCredentials).where(eq(adminCredentials.id, 1)).limit(1); return rows[0]; }
 export async function setAdminCredential(passwordHash: string, passwordSalt: string) { const db = await requireDb(); await db.insert(adminCredentials).values({ id: 1, passwordHash, passwordSalt }).onDuplicateKeyUpdate({ set: { passwordHash, passwordSalt } }); return { success: true }; }
+
+const DEFAULT_INTRODUCTION = "つくったもの、読んだもの、Gallery、日々のBlog記事をまとめる個人のアーカイブです。気になることがあれば、下のメールアドレスから気軽にご連絡ください。";
+export async function getSiteSettings() { const db = await requireDb(); const rows = await db.select().from(siteSettings).where(eq(siteSettings.id, 1)).limit(1); return rows[0] ?? { id: 1, introduction: DEFAULT_INTRODUCTION, updatedAt: null }; }
+export async function setSiteIntroduction(introduction: string) { const db = await requireDb(); await db.insert(siteSettings).values({ id: 1, introduction }).onDuplicateKeyUpdate({ set: { introduction } }); return { success: true }; }
 
 export async function listWorks() { const db = await requireDb(); return db.select().from(works).orderBy(works.sortOrder, desc(works.createdAt)); }
 export async function createWork(input: typeof works.$inferInsert) { const db = await requireDb(); await db.insert(works).values(input); return { success: true }; }

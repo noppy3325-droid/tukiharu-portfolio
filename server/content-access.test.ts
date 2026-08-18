@@ -4,6 +4,7 @@ import type { TrpcContext } from "./_core/context";
 
 const dbMock = vi.hoisted(() => ({
   listWorks: vi.fn(), listBooks: vi.fn(), listGalleryItems: vi.fn(), createGalleryItem: vi.fn(),
+  getSiteSettings: vi.fn(), setSiteIntroduction: vi.fn(),
   listPublishedPosts: vi.fn(), getAdjacentPublishedPosts: vi.fn(), getLikeCount: vi.fn(), addLike: vi.fn(), removeLike: vi.fn(),
   getPublishedPostById: vi.fn(), addComment: vi.fn(), listComments: vi.fn(),
 }));
@@ -21,6 +22,17 @@ describe("コンテンツと権限のAPI", () => {
   it("公開作品リストはログインなしでも取得できる", async () => {
     dbMock.listWorks.mockResolvedValue([{ id: 1, title: "作品" }]);
     await expect(appRouter.createCaller(context(null)).content.works.list()).resolves.toEqual([{ id: 1, title: "作品" }]);
+  });
+
+  it("自己紹介は公開取得でき、管理者セッションだけが保存できる", async () => {
+    const profile = { id: 1, introduction: "公開する自己紹介", updatedAt: null };
+    dbMock.getSiteSettings.mockResolvedValue(profile);
+    dbMock.setSiteIntroduction.mockResolvedValue({ success: true });
+    const publicCaller = appRouter.createCaller(context(null));
+    await expect(publicCaller.content.profile.get()).resolves.toEqual(profile);
+    await expect(appRouter.createCaller(context("user")).admin.content.profile.update({ introduction: "変更後の自己紹介" })).rejects.toMatchObject({ code: "FORBIDDEN" } satisfies Partial<TRPCError>);
+    await expect(appRouter.createCaller(context(null, true)).admin.content.profile.update({ introduction: "変更後の自己紹介" })).resolves.toEqual({ success: true });
+    expect(dbMock.setSiteIntroduction).toHaveBeenCalledWith("変更後の自己紹介");
   });
 
   it("一般ユーザーはオーナー専用コンテンツAPIを呼び出せない", async () => {

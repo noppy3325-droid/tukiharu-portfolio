@@ -7,14 +7,20 @@ const workInput = z.object({ title: z.string().min(1).max(160), summary: z.strin
 const bookInput = z.object({ title: z.string().min(1).max(180), author: z.string().min(1).max(160), note: z.string().min(1).max(2000), coverColor: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
 const galleryInput = z.object({ title: z.string().min(1).max(160), caption: z.string().min(1).max(2000), imageUrl: z.string().url().max(2048), camera: z.string().max(180).optional().or(z.literal("")), lens: z.string().max(180).optional().or(z.literal("")), location: z.string().max(240).optional().or(z.literal("")), takenAt: z.date().nullable(), rotation: z.number().int().min(-20).max(20), sortOrder: z.number().int().min(0).max(999) });
 const idInput = z.object({ id: z.number().int().positive() });
+const introductionInput = z.object({ introduction: z.string().trim().min(1, "自己紹介文を入力してください。").max(3000) });
 
 export const contentRouter = router({
+  profile: router({ get: publicProcedure.query(() => db.getSiteSettings()) }),
   works: router({ list: publicProcedure.query(() => db.listWorks()) }),
   books: router({ list: publicProcedure.query(() => db.listBooks()) }),
   gallery: router({ list: publicProcedure.query(() => db.listGalleryItems()) }),
 });
 
 export const adminContentRouter = router({
+  profile: router({
+    get: ownerProcedure.query(() => db.getSiteSettings()),
+    update: ownerProcedure.input(introductionInput).mutation(({ input }) => db.setSiteIntroduction(input.introduction)),
+  }),
   works: router({
     list: ownerProcedure.query(() => db.listWorks()),
     create: ownerProcedure.input(workInput).mutation(({ input }) => db.createWork({ ...input, url: input.url || null })),

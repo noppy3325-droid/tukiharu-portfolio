@@ -19,6 +19,12 @@ export const adminCredentials = mysqlTable("adminCredentials", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const siteSettings = mysqlTable("siteSettings", {
+  id: int("id").primaryKey(),
+  introduction: text("introduction").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const works = mysqlTable("works", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 160 }).notNull(),
