@@ -7,5 +7,5 @@ export function NoteDetailError({ errorCode }: { errorCode?: string }) {
     ? "記事が見つかりませんでした。"
     : "記事を取得できませんでした。時間をおいてもう一度お試しください。";
 
-  return <p className="tsuki-page-state" role="alert">{message}<a href="/blog">ノート一覧へ</a></p>;
+  return <p className="tsuki-page-state" role="alert">{message}<a href="/blog">Blog一覧へ</a></p>;
 }

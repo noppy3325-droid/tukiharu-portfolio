@@ -4,7 +4,7 @@ import type { TrpcContext } from "./_core/context";
 
 const dbMock = vi.hoisted(() => ({
   listWorks: vi.fn(), listBooks: vi.fn(), listGalleryItems: vi.fn(), createGalleryItem: vi.fn(),
-  listPublishedPosts: vi.fn(), getLikeCount: vi.fn(), addLike: vi.fn(), removeLike: vi.fn(),
+  listPublishedPosts: vi.fn(), getAdjacentPublishedPosts: vi.fn(), getLikeCount: vi.fn(), addLike: vi.fn(), removeLike: vi.fn(),
   getPublishedPostById: vi.fn(), addComment: vi.fn(), listComments: vi.fn(),
 }));
 
@@ -49,6 +49,13 @@ describe("コンテンツと権限のAPI", () => {
     dbMock.addLike.mockResolvedValue({ liked: true, count: 3 });
     await expect(appRouter.createCaller(context(null)).blog.like({ id: 4, visitorKey: "visitor-key-123" })).resolves.toEqual({ liked: true, count: 3 });
     expect(dbMock.addLike).toHaveBeenCalledWith(4, "visitor-key-123");
+  });
+
+  it("公開記事の前後ナビゲーションはログインなしでも取得できる", async () => {
+    const navigation = { newer: { id: 8, title: "新しい記事", slug: "newer" }, older: { id: 4, title: "前の記事", slug: "older" } };
+    dbMock.getAdjacentPublishedPosts.mockResolvedValue(navigation);
+    await expect(appRouter.createCaller(context(null)).blog.navigation({ id: 6 })).resolves.toEqual(navigation);
+    expect(dbMock.getAdjacentPublishedPosts).toHaveBeenCalledWith(6);
   });
 
   it("コメント投稿は認証済みの訪問者だけに限定される", async () => {

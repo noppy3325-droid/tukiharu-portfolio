@@ -8,13 +8,13 @@ describe("NoteDetailError", () => {
     const markup = renderToStaticMarkup(<NoteDetailError errorCode="NOT_FOUND" />);
     expect(markup).toContain("記事が見つかりませんでした。");
     expect(markup).toContain('href="/blog"');
-    expect(markup).toContain("ノート一覧へ");
+    expect(markup).toContain("Blog一覧へ");
   });
 
   it("renders a distinct retrieval-error message and the same recovery link", () => {
     const markup = renderToStaticMarkup(<NoteDetailError errorCode="INTERNAL_SERVER_ERROR" />);
     expect(markup).toContain("記事を取得できませんでした。時間をおいてもう一度お試しください。");
     expect(markup).toContain('href="/blog"');
-    expect(markup).toContain("ノート一覧へ");
+    expect(markup).toContain("Blog一覧へ");
   });
 });

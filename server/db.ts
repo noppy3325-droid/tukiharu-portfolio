@@ -108,6 +108,12 @@ export async function updateGalleryItem(id: number, input: Partial<typeof galler
 export async function deleteGalleryItem(id: number) { const db = await requireDb(); await db.delete(galleryItems).where(eq(galleryItems.id, id)); return { success: true }; }
 
 export async function listPublishedPosts() { const db = await requireDb(); return db.select().from(blogPosts).where(eq(blogPosts.status, "published")).orderBy(desc(blogPosts.publishedAt), desc(blogPosts.createdAt)); }
+export async function getAdjacentPublishedPosts(id: number) {
+  const db = await requireDb();
+  const posts = await db.select({ id: blogPosts.id, title: blogPosts.title, slug: blogPosts.slug, publishedAt: blogPosts.publishedAt, createdAt: blogPosts.createdAt }).from(blogPosts).where(eq(blogPosts.status, "published")).orderBy(desc(blogPosts.publishedAt), desc(blogPosts.createdAt));
+  const index = posts.findIndex(post => post.id === id);
+  return { newer: index > 0 ? posts[index - 1] : null, older: index >= 0 && index < posts.length - 1 ? posts[index + 1] : null };
+}
 export async function listAllPosts() { const db = await requireDb(); return db.select().from(blogPosts).orderBy(desc(blogPosts.updatedAt)); }
 export async function getPublishedPostBySlug(slug: string) { const db = await requireDb(); const rows = await db.select().from(blogPosts).where(and(eq(blogPosts.slug, slug), eq(blogPosts.status, "published"))).limit(1); return rows[0]; }
 export async function getPublishedPostById(id: number) { const db = await requireDb(); const rows = await db.select().from(blogPosts).where(and(eq(blogPosts.id, id), eq(blogPosts.status, "published"))).limit(1); return rows[0]; }

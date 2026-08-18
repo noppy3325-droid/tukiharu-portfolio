@@ -12,6 +12,7 @@ const idInput = z.object({ id: z.number().int().positive() });
 
 export const blogRouter = router({
   list: publicProcedure.query(() => db.listPublishedPosts()),
+  navigation: publicProcedure.input(idInput).query(({ input }) => db.getAdjacentPublishedPosts(input.id)),
   bySlug: publicProcedure.input(z.object({ slug: z.string().min(1) })).query(async ({ input }) => {
     const post = await db.getPublishedPostBySlug(input.slug);
     if (!post) throw new TRPCError({ code: "NOT_FOUND", message: "記事が見つかりません。" });
