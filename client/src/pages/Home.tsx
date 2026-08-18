@@ -1,33 +1,15 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+import RoomScene from "@/components/RoomScene";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+import { startLogin } from "@/const";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { BookOpenText, LogIn, Settings2, Sparkles } from "lucide-react";
+import { Link } from "wouter";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
 export default function Home() {
-  // The useAuth hook provides authentication state.
-  // To implement login/logout, call logout(), or start login from an event
-  // handler: onClick={() => startLogin()} (imported from "@/const"). Never call
-  // startLogin() during render (no href={startLogin()}) — it mints a one-time
-  // nonce cookie and must run only at the moment of navigation.
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
-
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
-  );
+  const { user, loading } = useAuth();
+  const works = trpc.content.works.list.useQuery();
+  const books = trpc.content.books.list.useQuery();
+  const gallery = trpc.content.gallery.list.useQuery();
+  return <main className="home-page"><nav className="site-topbar"><Link href="/" className="brand"><span>✦</span> little room</Link><div className="nav-links"><Link href="/blog"><BookOpenText size={16} />ノート</Link>{user?.role === "admin" && <Link href="/admin"><Settings2 size={16} />管理する</Link>}{!loading && !user && <Button onClick={() => startLogin()} variant="ghost" className="nav-login"><LogIn size={16} />ログイン</Button>}</div></nav><section className="hero-copy container"><p className="eyebrow"><Sparkles size={15} /> MY TINY CORNER</p><h1>わたしの、<br /><em>ちいさな部屋。</em></h1><p>好きなものを並べて、つくったものを飾って、<br className="hidden sm:block" />今日の気分を、そっと残しておく場所。</p></section><div className="container room-container"><RoomScene works={works.data ?? []} books={books.data ?? []} gallery={gallery.data ?? []} /></div><section className="home-bottom container"><div><span>01</span><p>PCのなかには<br /><strong>つくったもの</strong>を。</p></div><div><span>02</span><p>本棚には<br /><strong>好きなことば</strong>を。</p></div><div><span>03</span><p>カメラには<br /><strong>とっておきの瞬間</strong>を。</p></div></section><footer className="site-footer">made with a little bit of daydreaming <span>♡</span></footer></main>;
 }

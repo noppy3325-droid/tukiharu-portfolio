@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { blogComments, blogLikes, blogPosts, books, galleryItems, InsertUser, users, works } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,39 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+async function requireDb() {
+  const db = await getDb();
+  if (!db) throw new Error("データベースに接続できません。");
+  return db;
+}
+
+export async function listWorks() { const db = await requireDb(); return db.select().from(works).orderBy(works.sortOrder, desc(works.createdAt)); }
+export async function createWork(input: typeof works.$inferInsert) { const db = await requireDb(); await db.insert(works).values(input); return { success: true }; }
+export async function updateWork(id: number, input: Partial<typeof works.$inferInsert>) { const db = await requireDb(); await db.update(works).set(input).where(eq(works.id, id)); return { success: true }; }
+export async function deleteWork(id: number) { const db = await requireDb(); await db.delete(works).where(eq(works.id, id)); return { success: true }; }
+
+export async function listBooks() { const db = await requireDb(); return db.select().from(books).orderBy(books.sortOrder, desc(books.createdAt)); }
+export async function createBook(input: typeof books.$inferInsert) { const db = await requireDb(); await db.insert(books).values(input); return { success: true }; }
+export async function updateBook(id: number, input: Partial<typeof books.$inferInsert>) { const db = await requireDb(); await db.update(books).set(input).where(eq(books.id, id)); return { success: true }; }
+export async function deleteBook(id: number) { const db = await requireDb(); await db.delete(books).where(eq(books.id, id)); return { success: true }; }
+
+export async function listGalleryItems() { const db = await requireDb(); return db.select().from(galleryItems).orderBy(galleryItems.sortOrder, desc(galleryItems.createdAt)); }
+export async function createGalleryItem(input: typeof galleryItems.$inferInsert) { const db = await requireDb(); await db.insert(galleryItems).values(input); return { success: true }; }
+export async function updateGalleryItem(id: number, input: Partial<typeof galleryItems.$inferInsert>) { const db = await requireDb(); await db.update(galleryItems).set(input).where(eq(galleryItems.id, id)); return { success: true }; }
+export async function deleteGalleryItem(id: number) { const db = await requireDb(); await db.delete(galleryItems).where(eq(galleryItems.id, id)); return { success: true }; }
+
+export async function listPublishedPosts() { const db = await requireDb(); return db.select().from(blogPosts).where(eq(blogPosts.status, "published")).orderBy(desc(blogPosts.publishedAt), desc(blogPosts.createdAt)); }
+export async function listAllPosts() { const db = await requireDb(); return db.select().from(blogPosts).orderBy(desc(blogPosts.updatedAt)); }
+export async function getPublishedPostBySlug(slug: string) { const db = await requireDb(); const rows = await db.select().from(blogPosts).where(and(eq(blogPosts.slug, slug), eq(blogPosts.status, "published"))).limit(1); return rows[0]; }
+export async function getPublishedPostById(id: number) { const db = await requireDb(); const rows = await db.select().from(blogPosts).where(and(eq(blogPosts.id, id), eq(blogPosts.status, "published"))).limit(1); return rows[0]; }
+export async function createPost(input: { title: string; slug: string; excerpt: string; content: string; coverColor: string; status: "draft" | "published" }) { const db = await requireDb(); await db.insert(blogPosts).values({ ...input, publishedAt: input.status === "published" ? new Date() : null }); return { success: true }; }
+export async function updatePost(id: number, input: { title: string; slug: string; excerpt: string; content: string; coverColor: string; status: "draft" | "published" }) { const db = await requireDb(); const rows = await db.select().from(blogPosts).where(eq(blogPosts.id, id)).limit(1); const current = rows[0]; if (!current) throw new Error("記事が見つかりません。"); await db.update(blogPosts).set({ ...input, publishedAt: input.status === "published" ? (current.publishedAt ?? new Date()) : null }).where(eq(blogPosts.id, id)); return { success: true }; }
+export async function deletePost(id: number) { const db = await requireDb(); await db.delete(blogLikes).where(eq(blogLikes.postId, id)); await db.delete(blogComments).where(eq(blogComments.postId, id)); await db.delete(blogPosts).where(eq(blogPosts.id, id)); return { success: true }; }
+
+export async function getLikeCount(postId: number) { const db = await requireDb(); const rows = await db.select({ value: count() }).from(blogLikes).where(eq(blogLikes.postId, postId)); return rows[0]?.value ?? 0; }
+export async function addLike(postId: number, visitorKey: string) { const db = await requireDb(); await db.insert(blogLikes).values({ postId, visitorKey }).onDuplicateKeyUpdate({ set: { visitorKey } }); return { liked: true, count: await getLikeCount(postId) }; }
+export async function removeLike(postId: number, visitorKey: string) { const db = await requireDb(); await db.delete(blogLikes).where(and(eq(blogLikes.postId, postId), eq(blogLikes.visitorKey, visitorKey))); return { liked: false, count: await getLikeCount(postId) }; }
+
+export async function listComments(postId: number) { const db = await requireDb(); return db.select({ id: blogComments.id, body: blogComments.body, createdAt: blogComments.createdAt, authorName: users.name, authorId: users.id }).from(blogComments).innerJoin(users, eq(blogComments.authorId, users.id)).where(eq(blogComments.postId, postId)).orderBy(desc(blogComments.createdAt)); }
+export async function addComment(postId: number, authorId: number, body: string) { const db = await requireDb(); await db.insert(blogComments).values({ postId, authorId, body }); return { success: true }; }
+export async function deleteComment(id: number) { const db = await requireDb(); await db.delete(blogComments).where(eq(blogComments.id, id)); return { success: true }; }
