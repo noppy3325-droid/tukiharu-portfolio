@@ -67,7 +67,15 @@ try {
       for (let count = 0; count < 20 && !document.querySelector('a[href="/blog/' + newerSlug + '"]'); count += 1) await wait(250);
       const newestLink = document.querySelector('a[href="/blog/' + newerSlug + '"]');
       if (!newestLink) return { success: false, reason: 'newest_blog_list_link_missing' };
-      newestLink.click();
+      document.querySelector('header a[href="/"]')?.click();
+      for (let count = 0; count < 20 && location.pathname !== '/'; count += 1) await wait(250);
+      const blogLink = document.querySelector('header a[href="/blog"]');
+      if (location.pathname !== '/' || !blogLink) return { success: false, reason: 'home_navigation_missing' };
+      blogLink.click();
+      for (let count = 0; count < 20 && (location.pathname !== '/blog' || !document.querySelector('a[href="/blog/' + newerSlug + '"]')); count += 1) await wait(250);
+      const newestLinkAfterHome = document.querySelector('a[href="/blog/' + newerSlug + '"]');
+      if (location.pathname !== '/blog' || !newestLinkAfterHome) return { success: false, reason: 'home_to_blog_list_missing' };
+      newestLinkAfterHome.click();
       for (let count = 0; count < 20 && !document.querySelector('.blog-article-navigation a[href="/blog/' + olderSlug + '"]'); count += 1) await wait(250);
       const olderLink = document.querySelector('.blog-article-navigation a[href="/blog/' + olderSlug + '"]');
       if (location.pathname !== '/blog/' + newerSlug || !document.body.textContent.includes(newerTitle) || !olderLink) return { success: false, reason: 'newest_blog_navigation_missing' };
