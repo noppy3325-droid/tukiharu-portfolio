@@ -44,7 +44,7 @@ try {
       const routes = ['/works', '/library', '/photos', '/blog'];
       if (document.title !== '月春の資材置き場') return { success: false, reason: 'title_not_updated' };
       for (const route of routes) {
-        const selector = location.pathname === '/' ? 'a.tsuki-hub-card[href="' + route + '"]' : 'header a[href="' + route + '"]';
+        const selector = location.pathname === '/' ? 'a.tsuki-shortcut[href="' + route + '"]' : 'header a[href="' + route + '"]';
         const link = document.querySelector(selector);
         if (!link) return { success: false, reason: 'page_link_missing_' + route };
         link.click();

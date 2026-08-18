@@ -1,21 +1,18 @@
+import { BookOpen, BriefcaseBusiness, Camera, Code2, LogIn, NotebookPen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { startLogin } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { TsukiLayout } from "@/components/TsukiLayout";
-import { trpc } from "@/lib/trpc";
-import { ArrowRight, BookOpen, BriefcaseBusiness, Camera, LogIn, NotebookPen, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 
-const hubs = [
-  { href: "/works", index: "01", title: "作品", text: "月の下で、つくったもの。", icon: BriefcaseBusiness },
-  { href: "/library", index: "02", title: "本棚", text: "春の夜に、ひらいた本。", icon: BookOpen },
-  { href: "/photos", index: "03", title: "写真", text: "光を集めた、アルバム。", icon: Camera },
-  { href: "/blog", index: "04", title: "ノート", text: "静かなことばの記録。", icon: NotebookPen },
+const shortcuts = [
+  { href: "/works", label: "作品", icon: BriefcaseBusiness, className: "tsuki-shortcut-works" },
+  { href: "/library", label: "本棚", icon: BookOpen, className: "tsuki-shortcut-library" },
+  { href: "/photos", label: "写真", icon: Camera, className: "tsuki-shortcut-photos" },
+  { href: "/blog", label: "ノート", icon: NotebookPen, className: "tsuki-shortcut-notes" },
 ];
 
 export default function Home() {
   const { user, loading } = useAuth();
-  const works = trpc.content.works.list.useQuery();
-  const notes = trpc.blog.list.useQuery();
-  return <TsukiLayout action={!loading && !user ? <Button type="button" onClick={() => startLogin()} variant="ghost" className="tsuki-owner-link"><LogIn size={13} />ログイン</Button> : undefined}><section className="tsuki-hero"><div><p className="tsuki-eyebrow"><Sparkles size={14} /> TSUKIHARUA ARCHIVE</p><h1>月と春の<br /><em>あいだに。</em></h1><p>淡い光のなかで集めた、つくること、読むこと、写すこと。<br />月春の小さな資材置き場です。</p><div className="tsuki-hero-actions"><Link href="/works" className="tsuki-primary">作品を見る <ArrowRight size={16} /></Link><Link href="/blog" className="tsuki-secondary">最近のノートへ</Link></div></div><aside className="tsuki-orbit tsuki-glass"><div className="tsuki-moon" aria-hidden="true" /><p>UNDER THE SPRING MOON</p><strong>やわらかい光を、<br />すこしずつ集める。</strong><div><span>{works.data?.length ?? 0}</span><small>WORKS</small><span>{notes.data?.length ?? 0}</span><small>NOTES</small></div></aside></section><section className="tsuki-home-nav" aria-label="コンテンツページ"><h2 className="sr-only">コンテンツ</h2>{hubs.map(item => { const Icon = item.icon; return <Link href={item.href} className="tsuki-hub-card tsuki-glass" key={item.href}><span>{item.index}</span><Icon aria-hidden="true" /><h2>{item.title}</h2><p>{item.text}</p><b><ArrowRight size={17} /></b></Link>; })}</section><aside className="tsuki-quiet-note tsuki-glass"><span>✦ TSUKIHARUA</span><p>夜の青、春の薄紅、朝の水色。ページをひらくたび、色が静かに混ざり合います。</p></aside></TsukiLayout>;
+  return <TsukiLayout action={!loading && !user ? <Button type="button" onClick={() => startLogin()} variant="ghost" className="tsuki-owner-link"><LogIn size={13} />ログイン</Button> : undefined}><section className="tsuki-room-desktop" aria-label="月春の資材置き場"><aside className="tsuki-logo-widget tsuki-glass"><img src="/manus-storage/tsukiharua-logo_ff6052f9.png" alt="月春の資材置き場のイラスト" /><span>private archive</span></aside><aside className="tsuki-code-widget tsuki-glass" aria-label="HTMLエディタ"><div className="tsuki-code-bar"><span /><span /><span /><p><Code2 size={13} />index.html</p></div><pre><code><i>&lt;main&gt;</i>{"\n"}  <b>月春</b>{"\n"}  <em>資材置き場</em>{"\n"}<i>&lt;/main&gt;</i></code></pre><small>saved locally</small></aside><div className="tsuki-shortcuts" aria-label="コンテンツへのショートカット">{shortcuts.map(item => { const Icon = item.icon; return <Link href={item.href} className={`tsuki-shortcut tsuki-glass ${item.className}`} key={item.href}><Icon aria-hidden="true" /><span>{item.label}</span></Link>; })}</div></section></TsukiLayout>;
 }
