@@ -8,6 +8,7 @@
 @import "./tsukiharua.css";
 @import "./gallery-portfolio.css";
 @import "./gallery-thumbnail-overrides.css";
+@import "./gallery-info-sections.css";
 
 @custom-variant dark (&:is(.dark *));
 

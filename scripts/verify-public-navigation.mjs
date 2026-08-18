@@ -46,6 +46,8 @@ try {
       await new Promise(resolve => setTimeout(resolve, 1200));
       const hasGalleryContents = document.querySelectorAll('.gallery-card').length > 0 || /公開コンテンツ/.test(grid.textContent || '');
       if (!hasGalleryContents) return { success: false, reason: 'gallery_contents_missing' };
+      if (!document.querySelector('.gallery-home-info') || !document.querySelector('.gallery-updates')) return { success: false, reason: 'home_info_sections_missing' };
+      if (!document.querySelector('a[href="mailto:tukiharu3325@gmail.com"]')) return { success: false, reason: 'home_contact_missing' };
       const routes = ['/works', '/photos', '/blog', '/about'];
       if (document.title !== '月春の資材置き場') return { success: false, reason: 'title_not_updated' };
       for (const route of routes) {
@@ -56,6 +58,7 @@ try {
         await new Promise(resolve => setTimeout(resolve, 550));
         const pageContent = route === '/blog' ? document.querySelector('.simple-blog-hero') : document.querySelector('.gallery-page-heading, .tsuki-subhero');
         if (location.pathname !== route || !pageContent) return { success: false, reason: 'page_navigation_failed_' + route };
+        if (route === '/about' && !document.querySelector('a[href="mailto:tukiharu3325@gmail.com"]')) return { success: false, reason: 'about_contact_missing' };
       }
       return { success: true };
     })()

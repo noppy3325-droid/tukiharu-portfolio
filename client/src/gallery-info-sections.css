@@ -1,0 +1,154 @@
+.gallery-home-info {
+  margin: -1.5rem -28px 0;
+  padding: 5.7rem max(28px, calc((100% - 1124px) / 2)) 5rem;
+  background: #f6eef3;
+  clip-path: polygon(0 4.5%, 100% 0, 100% 100%, 0 96%);
+}
+
+.gallery-home-info-inner,
+.gallery-updates-inner {
+  max-width: 1124px;
+  margin: 0 auto;
+}
+
+.gallery-home-info-inner {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: clamp(3rem, 9vw, 8rem);
+  align-items: end;
+}
+
+.gallery-section-label {
+  margin: 0 0 1rem;
+  color: #b7879e;
+  font: 500 0.62rem "DM Mono", monospace;
+  letter-spacing: 0.18em;
+}
+
+.gallery-home-info h2,
+.gallery-updates h2 {
+  margin: 0 0 1rem;
+  font-family: "Shippori Mincho", "Yu Mincho", serif;
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.gallery-home-info p:not(.gallery-section-label) {
+  max-width: 39rem;
+  margin: 0;
+  color: #625d68;
+  font-size: 0.86rem;
+  line-height: 2.2;
+}
+
+.gallery-contact {
+  display: grid;
+  justify-items: start;
+  gap: 0.65rem;
+  padding: 1.35rem 0 0;
+  border-top: 1px solid rgba(151, 122, 143, 0.35);
+}
+
+.gallery-contact span {
+  color: #9b8190;
+  font: 500 0.56rem "DM Mono", monospace;
+  letter-spacing: 0.15em;
+}
+
+.gallery-contact a {
+  color: #514958;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-bottom: 1px solid #c99faf;
+  padding-bottom: 0.25rem;
+}
+
+.gallery-updates {
+  margin: -1.5rem -28px 0;
+  padding: 5.6rem max(28px, calc((100% - 1124px) / 2)) 5.4rem;
+  background: #f1eff8;
+  clip-path: polygon(0 4%, 100% 0, 100% 96%, 0 100%);
+}
+
+.gallery-update-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 2.2rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(151, 143, 169, 0.35);
+}
+
+.gallery-update-list li {
+  display: grid;
+  gap: 0.55rem;
+  min-height: 112px;
+  padding: 1.25rem 1.3rem 1.25rem 0;
+  border-bottom: 1px solid rgba(151, 143, 169, 0.35);
+}
+
+.gallery-update-list li + li {
+  padding-left: 1.3rem;
+  border-left: 1px solid rgba(151, 143, 169, 0.35);
+}
+
+.gallery-update-list span {
+  color: #9b8da8;
+  font: 500 0.56rem "DM Mono", monospace;
+  letter-spacing: 0.08em;
+}
+
+.gallery-update-list strong {
+  overflow: hidden;
+  color: #514958;
+  font-family: "Shippori Mincho", "Yu Mincho", serif;
+  font-size: 0.93rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gallery-updates-empty {
+  margin: 2rem 0 0;
+  color: #746f7d;
+  font-size: 0.78rem;
+}
+
+.gallery-about-contact {
+  margin-top: 4rem;
+  padding: 2.4rem 0 0;
+  border-top: 1px solid var(--gallery-line);
+}
+
+@media (max-width: 760px) {
+  .gallery-home-info,
+  .gallery-updates {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .gallery-home-info { padding-top: 4.4rem; }
+  .gallery-updates { padding-top: 4.35rem; }
+
+  .gallery-home-info-inner {
+    grid-template-columns: 1fr;
+    gap: 2.4rem;
+  }
+
+  .gallery-update-list {
+    grid-template-columns: 1fr;
+    margin-top: 1.6rem;
+  }
+
+  .gallery-update-list li,
+  .gallery-update-list li + li {
+    min-height: auto;
+    padding: 1rem 0;
+    border-left: 0;
+  }
+}
