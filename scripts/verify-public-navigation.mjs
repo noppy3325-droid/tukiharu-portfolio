@@ -50,6 +50,8 @@ try {
       if (!document.querySelector('a[href="mailto:tukiharu3325@gmail.com"]')) return { success: false, reason: 'home_contact_missing' };
       const routes = ['/works', '/photos', '/blog', '/about'];
       if (document.title !== '月春の資材置き場') return { success: false, reason: 'title_not_updated' };
+      const notesLink = document.querySelector('header a[href="/blog"]');
+      if (!notesLink || notesLink.textContent.trim() !== 'ノート') return { success: false, reason: 'notes_label_not_updated' };
       for (const route of routes) {
         const selector = 'header a[href="' + route + '"]';
         const link = document.querySelector(selector);
@@ -58,8 +60,17 @@ try {
         await new Promise(resolve => setTimeout(resolve, 550));
         const pageContent = route === '/blog' ? document.querySelector('.simple-blog-hero') : document.querySelector('.gallery-page-heading, .tsuki-subhero');
         if (location.pathname !== route || !pageContent) return { success: false, reason: 'page_navigation_failed_' + route };
+        if (route === '/blog' && /ノートを読み込んでいます。/.test(document.body.textContent || '')) return { success: false, reason: 'notes_loading_stuck' };
         if (route === '/about' && !document.querySelector('a[href="mailto:tukiharu3325@gmail.com"]')) return { success: false, reason: 'about_contact_missing' };
       }
+      history.pushState({}, '', '/blog/not-found-verification');
+      dispatchEvent(new PopStateEvent('popstate'));
+      for (let count = 0; count < 12 && !document.querySelector('.tsuki-page-state a[href="/blog"]'); count += 1) {
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+      const missingPostState = document.querySelector('.tsuki-page-state');
+      const backToNotes = document.querySelector('.tsuki-page-state a[href="/blog"]');
+      if (location.pathname !== '/blog/not-found-verification' || !missingPostState || !/記事が見つかりませんでした。/.test(missingPostState.textContent || '') || !backToNotes) return { success: false, reason: 'missing_note_recovery_failed' };
       return { success: true };
     })()
   `);

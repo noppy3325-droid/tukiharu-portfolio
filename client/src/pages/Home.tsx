@@ -19,7 +19,7 @@ export default function Home() {
     ...(works.data ?? []).map(item => ({ id: `work-${item.id}`, href: "/works", title: item.title, meta: item.category, date: item.updatedAt, kind: "work" as const })),
     ...(books.data ?? []).map(item => ({ id: `book-${item.id}`, href: "/library", title: item.title, meta: item.author, date: item.updatedAt, kind: "book" as const })),
     ...(photos.data ?? []).map(item => ({ id: `photo-${item.id}`, href: "/photos", title: item.title, meta: "Gallery", date: item.updatedAt, kind: "photo" as const, imageUrl: item.imageUrl })),
-    ...(notes.data ?? []).map(item => ({ id: `note-${item.id}`, href: `/blog/${item.slug}`, title: item.title, meta: "Blog", date: item.updatedAt, kind: "note" as const })),
+    ...(notes.data ?? []).map(item => ({ id: `note-${item.id}`, href: `/blog/${item.slug}`, title: item.title, meta: "ノート", date: item.updatedAt, kind: "note" as const })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 12);
   const loading = works.isLoading || books.isLoading || photos.isLoading || notes.isLoading;
   const loadError = works.isError || books.isError || photos.isError || notes.isError;
