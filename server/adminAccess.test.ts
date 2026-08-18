@@ -19,7 +19,7 @@ describe("adminAccess", () => {
     dbMock.getAdminCredential.mockResolvedValue({ id: 1, ...credential });
     const { ctx, cookies } = context();
 
-    await expect(appRouter.createCaller(ctx).adminAccess.login({ password })).resolves.toEqual({ success: true });
+    await expect(appRouter.createCaller(ctx).adminAccess.login({ password })).resolves.toMatchObject({ success: true, sessionToken: expect.stringMatching(/^admin\.\d+\./) });
     expect(cookies).toHaveLength(1);
     expect(cookies[0]?.name).toBe(ADMIN_SESSION_COOKIE);
     expect(cookies[0]?.value).toMatch(/^admin\.\d+\./);

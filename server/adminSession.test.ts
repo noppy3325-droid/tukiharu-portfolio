@@ -21,4 +21,12 @@ describe("管理者パスワードセッション", () => {
     expect(getAdminSessionToken(`${ADMIN_SESSION_COOKIE}=${token}; theme=blue`, {})).toBe(token);
     expect(getAdminSessionToken(undefined, { [ADMIN_SESSION_COOKIE]: token })).toBe(token);
   });
+
+  it("Cookieが利用できない埋め込み環境では、専用ヘッダーの署名済み管理セッションを利用する", () => {
+    const now = Date.now();
+    const token = createAdminSession(now);
+    const resolved = getAdminSessionToken(undefined, {}, token);
+    expect(resolved).toBe(token);
+    expect(verifyAdminSession(resolved, now + 1_000)).toBe(true);
+  });
 });

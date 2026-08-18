@@ -3,6 +3,8 @@
 @import "./korean-room.css";
 @import "./admin-blue.css";
 @import "./desktop-flat.css";
+@import "./simple-portfolio.css";
+@import "./admin-simple.css";
 
 @custom-variant dark (&:is(.dark *));
 

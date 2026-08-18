@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
+import { ADMIN_SESSION_STORAGE_KEY } from "@shared/const";
 import { BookHeart, BriefcaseBusiness, Camera, FilePenLine, KeyRound, LogOut, Pencil, Plus, Save, ShieldCheck, Trash2 } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { Link } from "wouter";
@@ -27,8 +28,8 @@ export default function Admin() {
   const access = trpc.adminAccess.status.useQuery();
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const login = trpc.adminAccess.login.useMutation({ onSuccess: () => { setPassword(""); utils.adminAccess.status.invalidate(); } });
-  const logout = trpc.adminAccess.logout.useMutation({ onSuccess: () => utils.adminAccess.status.invalidate() });
+  const login = trpc.adminAccess.login.useMutation({ onSuccess: result => { try { sessionStorage.setItem(ADMIN_SESSION_STORAGE_KEY, result.sessionToken); } catch { /* Cookie session remains available when storage is blocked. */ } setPassword(""); utils.adminAccess.status.invalidate(); } });
+  const logout = trpc.adminAccess.logout.useMutation({ onSuccess: () => { try { sessionStorage.removeItem(ADMIN_SESSION_STORAGE_KEY); } catch { /* Ignore unavailable storage. */ } utils.adminAccess.status.invalidate(); } });
   const changePassword = trpc.adminAccess.changePassword.useMutation({ onSuccess: () => setNewPassword("") });
 
   if (access.isLoading) return <main className="loading-page">管理画面を準備しています…</main>;

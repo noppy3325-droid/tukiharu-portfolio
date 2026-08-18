@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { COOKIE_NAME, UNAUTHED_ERR_MSG } from '@shared/const';
+import { ADMIN_SESSION_HEADER, ADMIN_SESSION_STORAGE_KEY, COOKIE_NAME, UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
@@ -47,6 +47,7 @@ const trpcClient = trpc.createClient({
         // (Safari ITP / private browsing / WebView), the runtime mirrors the
         // session into sessionStorage so we can forward it as a Bearer token.
         // The regular OAuth cookie flow keeps working and takes priority server-side.
+        const headers: Record<string, string> = {};
         try {
           const raw = sessionStorage.getItem("manus-cookie");
           if (raw) {
@@ -54,13 +55,21 @@ const trpcClient = trpc.createClient({
             const pair = raw.split(";").find(s => s.trim().startsWith(prefix));
             const token = pair?.trim().slice(prefix.length);
             if (token) {
-              return { Authorization: `Bearer ${token}` };
+              headers.Authorization = `Bearer ${token}`;
             }
+          }
+
+          // Admin login may run inside an embedded preview, where the browser
+          // blocks third-party cookies. Keep this short-lived, signed token in
+          // sessionStorage and forward it only to this same-origin API.
+          const adminSession = sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
+          if (adminSession) {
+            headers[ADMIN_SESSION_HEADER] = adminSession;
           }
         } catch {
           // sessionStorage unavailable
         }
-        return {};
+        return headers;
       },
       fetch(input, init) {
         return globalThis.fetch(input, {

@@ -2,6 +2,7 @@ import type { CreateExpressContextOptions } from "@trpc/server/adapters/express"
 import { parse } from "cookie";
 import type { User } from "../../drizzle/schema";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "../adminSession";
+import { ADMIN_SESSION_HEADER } from "../../shared/const";
 import { sdk } from "./sdk";
 
 export type TrpcContext = {
@@ -13,10 +14,13 @@ export type TrpcContext = {
 
 export function getAdminSessionToken(
   rawCookieHeader: string | undefined,
-  parsedCookies?: Record<string, string | undefined>
+  parsedCookies?: Record<string, string | undefined>,
+  headerToken?: string | string[] | undefined
 ) {
   const headerCookies = parse(rawCookieHeader || "");
-  return headerCookies[ADMIN_SESSION_COOKIE] || parsedCookies?.[ADMIN_SESSION_COOKIE];
+  const cookieToken = headerCookies[ADMIN_SESSION_COOKIE] || parsedCookies?.[ADMIN_SESSION_COOKIE];
+  if (cookieToken) return cookieToken;
+  return Array.isArray(headerToken) ? headerToken[0] : headerToken;
 }
 
 export async function createContext(
@@ -36,7 +40,8 @@ export async function createContext(
   // administrator session is never hidden by that empty object.
   const adminSessionToken = getAdminSessionToken(
     opts.req.headers.cookie,
-    opts.req.cookies as Record<string, string | undefined> | undefined
+    opts.req.cookies as Record<string, string | undefined> | undefined,
+    opts.req.headers[ADMIN_SESSION_HEADER]
   );
   return {
     req: opts.req,

@@ -30,8 +30,9 @@ export const appRouter = router({
         throw new TRPCError({ code: "UNAUTHORIZED", message: "パスワードが正しくありません。" });
       }
       const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.cookie(ADMIN_SESSION_COOKIE, createAdminSession(), { ...cookieOptions, maxAge: 1000 * 60 * 60 * 12 });
-      return { success: true } as const;
+      const sessionToken = createAdminSession();
+      ctx.res.cookie(ADMIN_SESSION_COOKIE, sessionToken, { ...cookieOptions, maxAge: 1000 * 60 * 60 * 12 });
+      return { success: true, sessionToken } as const;
     }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
