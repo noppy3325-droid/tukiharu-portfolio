@@ -41,20 +41,18 @@ try {
   await wait(1200);
   const result = await evaluate(target.webSocketDebuggerUrl, `
     (async () => {
-      const hashTargets = ['works', 'library', 'photos', 'notes'];
-      for (const id of hashTargets) {
-        const link = document.querySelector('a[href="#' + id + '"]');
-        const section = document.getElementById(id);
-        if (!link || !section) return { success: false, reason: 'section_link_missing_' + id };
+      const routes = ['/works', '/library', '/photos', '/blog'];
+      if (document.title !== '月春の資材置き場') return { success: false, reason: 'title_not_updated' };
+      for (const route of routes) {
+        const selector = location.pathname === '/' ? 'a.tsuki-hub-card[href="' + route + '"]' : 'header a[href="' + route + '"]';
+        const link = document.querySelector(selector);
+        if (!link) return { success: false, reason: 'page_link_missing_' + route };
         link.click();
-        await new Promise(resolve => setTimeout(resolve, 160));
-        if (location.hash !== '#' + id) return { success: false, reason: 'hash_navigation_failed_' + id };
+        await new Promise(resolve => setTimeout(resolve, 550));
+        const pageContent = route === '/blog' ? document.querySelector('.simple-blog-hero') : document.querySelector('.tsuki-subhero');
+        if (location.pathname !== route || !pageContent) return { success: false, reason: 'page_navigation_failed_' + route };
       }
-      const notesLink = document.querySelector('a[href="/blog"]');
-      if (!notesLink) return { success: false, reason: 'notes_link_missing' };
-      notesLink.click();
-      await new Promise(resolve => setTimeout(resolve, 700));
-      return { success: location.pathname === '/blog' && Boolean(document.querySelector('.simple-blog-hero')), reason: 'notes_navigation_failed' };
+      return { success: true };
     })()
   `);
   if (!result?.success) throw new Error(result?.reason || "public_navigation_failed");

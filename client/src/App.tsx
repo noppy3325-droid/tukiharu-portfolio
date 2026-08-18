@@ -8,12 +8,18 @@ import Admin from "./pages/Admin";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Home from "./pages/Home";
+import Library from "./pages/Library";
+import Photos from "./pages/Photos";
+import Works from "./pages/Works";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/works"} component={Works} />
+      <Route path={"/library"} component={Library} />
+      <Route path={"/photos"} component={Photos} />
       <Route path={"/blog"} component={Blog} />
       <Route path={"/blog/:slug"} component={BlogPost} />
       <Route path={"/admin"} component={Admin} />

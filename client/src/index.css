@@ -5,6 +5,7 @@
 @import "./desktop-flat.css";
 @import "./simple-portfolio.css";
 @import "./admin-simple.css";
+@import "./tsukiharua.css";
 
 @custom-variant dark (&:is(.dark *));
 
