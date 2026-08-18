@@ -1,7 +1,6 @@
 import { and, count, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { blogComments, blogLikes, blogPosts, books, galleryItems, InsertUser, users, works } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import { adminCredentials, blogComments, blogLikes, blogPosts, books, galleryItems, InsertUser, users, works } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -52,13 +51,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    }
+    values.role = "user";
+    updateSet.role = "user";
 
     if (!values.lastSignedIn) {
       values.lastSignedIn = new Date();
@@ -94,6 +88,9 @@ async function requireDb() {
   if (!db) throw new Error("データベースに接続できません。");
   return db;
 }
+
+export async function getAdminCredential() { const db = await requireDb(); const rows = await db.select().from(adminCredentials).where(eq(adminCredentials.id, 1)).limit(1); return rows[0]; }
+export async function setAdminCredential(passwordHash: string, passwordSalt: string) { const db = await requireDb(); await db.insert(adminCredentials).values({ id: 1, passwordHash, passwordSalt }).onDuplicateKeyUpdate({ set: { passwordHash, passwordSalt } }); return { success: true }; }
 
 export async function listWorks() { const db = await requireDb(); return db.select().from(works).orderBy(works.sortOrder, desc(works.createdAt)); }
 export async function createWork(input: typeof works.$inferInsert) { const db = await requireDb(); await db.insert(works).values(input); return { success: true }; }

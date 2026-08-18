@@ -1,5 +1,9 @@
 import { COOKIE_NAME } from "@shared/const";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { ADMIN_SESSION_COOKIE, createAdminSession, createPasswordCredential, verifyAdminPassword } from "./adminSession";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { getAdminCredential, setAdminCredential } from "./db";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { adminBlogRouter, blogRouter } from "./routers/blog";
@@ -16,6 +20,28 @@ export const appRouter = router({
       return {
         success: true,
       } as const;
+    }),
+  }),
+  adminAccess: router({
+    status: publicProcedure.query(({ ctx }) => ({ isAdmin: Boolean(ctx.isAdmin) })),
+    login: publicProcedure.input(z.object({ password: z.string().min(1).max(1024) })).mutation(async ({ ctx, input }) => {
+      const credential = await getAdminCredential();
+      if (!credential || !verifyAdminPassword(input.password, credential.passwordHash, credential.passwordSalt)) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "パスワードが正しくありません。" });
+      }
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.cookie(ADMIN_SESSION_COOKIE, createAdminSession(), { ...cookieOptions, maxAge: 1000 * 60 * 60 * 12 });
+      return { success: true } as const;
+    }),
+    logout: publicProcedure.mutation(({ ctx }) => {
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.clearCookie(ADMIN_SESSION_COOKIE, { ...cookieOptions, maxAge: -1 });
+      return { success: true } as const;
+    }),
+    changePassword: publicProcedure.input(z.object({ password: z.string().min(12, "12文字以上のパスワードを設定してください。").max(1024) })).mutation(async ({ ctx, input }) => {
+      if (!ctx.isAdmin) throw new TRPCError({ code: "FORBIDDEN", message: "管理者セッションが必要です。" });
+      const credential = createPasswordCredential(input.password);
+      return setAdminCredential(credential.passwordHash, credential.passwordSalt);
     }),
   }),
   content: contentRouter,

@@ -2,10 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookHeart, Camera, ExternalLink, FolderHeart, Monitor, Sparkles } from "lucide-react";
 import { useState } from "react";
+import RoomTerminal from "./RoomTerminal";
 
 type Work = { id: number; title: string; summary: string; category: string; url: string | null; accent: string };
 type Book = { id: number; title: string; author: string; note: string; coverColor: string };
-type GalleryItem = { id: number; title: string; caption: string; imageUrl: string; rotation: number };
+type GalleryItem = { id: number; title: string; caption: string; imageUrl: string; camera: string | null; lens: string | null; location: string | null; takenAt: Date | null; rotation: number };
 
 type RoomSceneProps = {
   works: Work[];
@@ -21,6 +22,7 @@ function EmptyShelf({ children }: { children: React.ReactNode }) {
 
 export default function RoomScene({ works, books, gallery }: RoomSceneProps) {
   const [activeDialog, setActiveDialog] = useState<RoomDialog>(null);
+  const [selectedPhotoId, setSelectedPhotoId] = useState<number | null>(null);
 
   return (
     <>
@@ -63,6 +65,7 @@ export default function RoomScene({ works, books, gallery }: RoomSceneProps) {
         </button>
 
         <div className="rug" aria-hidden="true"><span>⋆ ｡° ✩</span></div>
+        <RoomTerminal />
         <p className="room-hint"><Sparkles size={15} /> 気になるものを、そっとクリックしてね</p>
       </section>
 
@@ -85,7 +88,7 @@ export default function RoomScene({ works, books, gallery }: RoomSceneProps) {
       <Dialog open={activeDialog === "gallery"} onOpenChange={(open) => !open && setActiveDialog(null)}>
         <DialogContent className="room-dialog max-h-[85vh] overflow-y-auto border-[#d9ca9d] bg-[#fffdf5] p-0 sm:max-w-3xl">
           <DialogHeader className="dialog-heading dialog-yellow"><div className="dialog-icon"><Camera /></div><DialogTitle>ポラロイドの思い出</DialogTitle><DialogDescription>光と空気を集めた、何気ない一瞬のアルバム。</DialogDescription></DialogHeader>
-          <div className="gallery-grid p-6">{gallery.length ? gallery.map(item => <figure className="polaroid" key={item.id} style={{ transform: `rotate(${item.rotation}deg)` }}><img src={item.imageUrl} alt={item.title} /><figcaption><strong>{item.title}</strong><span>{item.caption}</span></figcaption></figure>) : <div className="col-span-full"><EmptyShelf>まだ写真はありません。<br />ここには、オーナーが追加したポラロイドが飾られます。</EmptyShelf></div>}</div>
+          <div className="gallery-grid p-6">{gallery.length ? gallery.map(item => <button type="button" className={`polaroid ${selectedPhotoId === item.id ? "is-selected" : ""}`} key={item.id} style={{ transform: `rotate(${item.rotation}deg)` }} onClick={() => setSelectedPhotoId(selectedPhotoId === item.id ? null : item.id)} aria-pressed={selectedPhotoId === item.id}><img src={item.imageUrl} alt={item.title} /><span className="polaroid-caption"><strong>{item.title}</strong><span>{item.caption}</span><em>{[item.camera, item.lens, item.location, item.takenAt ? new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium" }).format(new Date(item.takenAt)) : null].filter(Boolean).join(" · ") || "撮影メモはありません"}</em></span></button>) : <div className="col-span-full"><EmptyShelf>まだ写真はありません。<br />ここには、オーナーが追加したポラロイドが飾られます。</EmptyShelf></div>}</div>
         </DialogContent>
       </Dialog>
     </>

@@ -12,6 +12,13 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
+export const adminCredentials = mysqlTable("adminCredentials", {
+  id: int("id").primaryKey(),
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  passwordSalt: varchar("passwordSalt", { length: 128 }).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const works = mysqlTable("works", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 160 }).notNull(),
@@ -40,6 +47,10 @@ export const galleryItems = mysqlTable("galleryItems", {
   title: varchar("title", { length: 160 }).notNull(),
   caption: text("caption").notNull(),
   imageUrl: varchar("imageUrl", { length: 2048 }).notNull(),
+  camera: varchar("camera", { length: 180 }),
+  lens: varchar("lens", { length: 180 }),
+  location: varchar("location", { length: 240 }),
+  takenAt: timestamp("takenAt"),
   rotation: int("rotation").default(0).notNull(),
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
