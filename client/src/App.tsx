@@ -8,6 +8,7 @@ import Admin from "./pages/Admin";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Home from "./pages/Home";
+import About from "./pages/About";
 import Library from "./pages/Library";
 import Photos from "./pages/Photos";
 import Works from "./pages/Works";
@@ -17,6 +18,7 @@ function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/about"} component={About} />
       <Route path={"/works"} component={Works} />
       <Route path={"/library"} component={Library} />
       <Route path={"/photos"} component={Photos} />

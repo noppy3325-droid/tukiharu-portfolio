@@ -6,6 +6,8 @@
 @import "./simple-portfolio.css";
 @import "./admin-simple.css";
 @import "./tsukiharua.css";
+@import "./gallery-portfolio.css";
+@import "./gallery-thumbnail-overrides.css";
 
 @custom-variant dark (&:is(.dark *));
 

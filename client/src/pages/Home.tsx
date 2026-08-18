@@ -1,47 +1,26 @@
-import { BookOpen, BriefcaseBusiness, Camera, Code2, LogIn, NotebookPen } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { startLogin } from "@/const";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { TsukiLayout } from "@/components/TsukiLayout";
 import { trpc } from "@/lib/trpc";
-import { buildHomeUpdates } from "../lib/homeUpdates";
-import { useEffect, useState } from "react";
 import { Link } from "wouter";
 
-const shortcuts = [
-  { href: "/works", label: "作品", icon: BriefcaseBusiness, className: "tsuki-shortcut-works" },
-  { href: "/library", label: "本棚", icon: BookOpen, className: "tsuki-shortcut-library" },
-  { href: "/photos", label: "写真", icon: Camera, className: "tsuki-shortcut-photos" },
-  { href: "/blog", label: "ノート", icon: NotebookPen, className: "tsuki-shortcut-notes" },
-];
-
-const editorCode = "<main>\n  月春\n  資材置き場\n</main>";
-function formatUpdateDate(value: Date | string) { return new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" }).format(new Date(value)); }
-
-function TypingEditorCode() {
-  const [visibleLength, setVisibleLength] = useState(0);
-  useEffect(() => {
-    let timeout: number;
-    const tick = () => setVisibleLength(current => {
-      if (current < editorCode.length) { timeout = window.setTimeout(tick, 62); return current + 1; }
-      timeout = window.setTimeout(() => { setVisibleLength(0); timeout = window.setTimeout(tick, 420); }, 2600);
-      return current;
-    });
-    timeout = window.setTimeout(tick, 430);
-    return () => window.clearTimeout(timeout);
-  }, []);
-  const displayed = editorCode.slice(0, visibleLength).split("\n");
-  return <pre aria-label="月春のHTMLコードを入力中"><code>{displayed.map((line, index) => <span className="tsuki-code-line" key={index}>{line.startsWith("<") ? <i>{line}</i> : line.includes("月春") ? <b>{line}</b> : line.includes("資材置き場") ? <em>{line}</em> : line}{index < displayed.length - 1 && "\n"}</span>)}<span className="tsuki-code-cursor" aria-hidden="true" /></code></pre>;
+type GalleryEntry = { id: string; href: string; title: string; meta: string; date: Date | string; kind: "work" | "book" | "photo" | "note"; imageUrl?: string | null };
+function formatDate(date: Date | string) { return new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(date)); }
+function GalleryThumbnail({ kind }: { kind: GalleryEntry["kind"] }) {
+  if (kind === "work") return <svg viewBox="0 0 240 230" aria-hidden="true"><rect width="240" height="230" fill="#f4e6ed" /><rect x="44" y="32" width="152" height="166" fill="#fffaf8" /><path d="M69 166c25-44 44-24 59-52 13-25 28-37 47-52" fill="none" stroke="#c99aac" strokeWidth="2" /><circle cx="161" cy="79" r="20" fill="#e6c8d3" /><rect x="62" y="51" width="54" height="3" fill="#cfabb7" /></svg>;
+  if (kind === "book") return <svg viewBox="0 0 240 230" aria-hidden="true"><rect width="240" height="230" fill="#eee9f6" /><path d="M45 54h76v124H45z" fill="#c9bcd6" /><path d="M121 54h74v124h-74z" fill="#f9f7fb" /><path d="M121 54c20-9 46-8 74 0M121 54c-22-9-49-8-76 0" fill="none" stroke="#aaa0bd" strokeWidth="2" /><path d="M66 83h34M66 97h41M139 83h32M139 97h39" stroke="#d5cddd" strokeWidth="2" /></svg>;
+  return <svg viewBox="0 0 240 230" aria-hidden="true"><rect width="240" height="230" fill="#f8f2e8" /><rect x="52" y="31" width="138" height="169" rx="2" fill="#fffdf8" /><path d="M75 73h91M75 94h70M75 115h86M75 136h51" stroke="#d1baae" strokeWidth="2" /><path d="M74 161c20-11 40-11 60 0" fill="none" stroke="#c691a4" strokeWidth="2" /></svg>;
 }
 
 export default function Home() {
-  const { user, loading } = useAuth();
   const works = trpc.content.works.list.useQuery();
   const books = trpc.content.books.list.useQuery();
   const photos = trpc.content.gallery.list.useQuery();
   const notes = trpc.blog.list.useQuery();
-  const updates = buildHomeUpdates([...(works.data ?? []).map(item => ({ label: "作品", title: item.title, updatedAt: item.updatedAt })), ...(books.data ?? []).map(item => ({ label: "本棚", title: item.title, updatedAt: item.updatedAt })), ...(photos.data ?? []).map(item => ({ label: "写真", title: item.title, updatedAt: item.updatedAt })), ...(notes.data ?? []).map(item => ({ label: "ノート", title: item.title, updatedAt: item.updatedAt }))]);
-  const updatesLoading = works.isLoading || books.isLoading || photos.isLoading || notes.isLoading;
-  const updatesError = works.isError || books.isError || photos.isError || notes.isError;
-  return <TsukiLayout action={!loading && !user ? <Button type="button" onClick={() => startLogin()} variant="ghost" className="tsuki-owner-link"><LogIn size={13} />ログイン</Button> : undefined}><section className="tsuki-room-desktop" aria-label="月春の資材置き場"><aside className="tsuki-home-info"><section className="tsuki-profile-widget tsuki-glass"><p>ABOUT</p><h1>月春の資材置き場</h1><span>つくったものと、好きなものをまとめる個人のアーカイブです。</span></section><section className="tsuki-updates-widget tsuki-glass"><div><p>UPDATES</p><h2>最近の更新</h2></div>{updatesLoading ? <small className="tsuki-update-state">更新情報を読み込んでいます。</small> : updatesError ? <small className="tsuki-update-state">更新情報を取得できませんでした。</small> : updates.length ? <ul>{updates.slice(0, 3).map(update => <li key={`${update.label}-${update.title}`}><span>{formatUpdateDate(update.updatedAt)} · {update.label}</span><strong>{update.title}</strong></li>)}</ul> : <small className="tsuki-update-state">まだ公開コンテンツはありません。</small>}</section></aside><div className="tsuki-shortcuts" aria-label="コンテンツへのショートカット">{shortcuts.map(item => { const Icon = item.icon; return <Link href={item.href} className="tsuki-shortcut tsuki-glass" key={item.href}><Icon aria-hidden="true" /><span>{item.label}</span></Link>; })}</div><aside className="tsuki-code-widget tsuki-glass" aria-label="HTMLエディタ"><div className="tsuki-code-bar"><span /><span /><span /><p><Code2 size={13} />index.html</p></div><TypingEditorCode /><small>saved locally</small></aside></section></TsukiLayout>;
+  const entries: GalleryEntry[] = [
+    ...(works.data ?? []).map(item => ({ id: `work-${item.id}`, href: "/works", title: item.title, meta: item.category, date: item.updatedAt, kind: "work" as const })),
+    ...(books.data ?? []).map(item => ({ id: `book-${item.id}`, href: "/library", title: item.title, meta: item.author, date: item.updatedAt, kind: "book" as const })),
+    ...(photos.data ?? []).map(item => ({ id: `photo-${item.id}`, href: "/photos", title: item.title, meta: "Gallery", date: item.updatedAt, kind: "photo" as const, imageUrl: item.imageUrl })),
+    ...(notes.data ?? []).map(item => ({ id: `note-${item.id}`, href: `/blog/${item.slug}`, title: item.title, meta: "Blog", date: item.updatedAt, kind: "note" as const })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 12);
+  const loading = works.isLoading || books.isLoading || photos.isLoading || notes.isLoading;
+  return <TsukiLayout><section className="gallery-intro"><p>PORTFOLIO</p><h1>Gallery</h1></section><section className="gallery-grid" aria-label="公開コンテンツ">{loading ? <p className="gallery-state">作品を読み込んでいます。</p> : entries.length ? entries.map(entry => <Link href={entry.href} className="gallery-card" key={entry.id}><div className={`gallery-thumb gallery-thumb-${entry.kind}`}>{entry.imageUrl ? <img src={entry.imageUrl} alt={entry.title} /> : <GalleryThumbnail kind={entry.kind} />}</div><div className="gallery-card-copy"><h2>{entry.title}</h2><p>{entry.meta}<time>{formatDate(entry.date)}</time></p></div></Link>) : <p className="gallery-state">公開コンテンツを準備しています。</p>}</section></TsukiLayout>;
 }

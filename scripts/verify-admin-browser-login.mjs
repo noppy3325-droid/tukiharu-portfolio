@@ -53,7 +53,24 @@ try {
       input.dispatchEvent(new Event('input', { bubbles: true }));
       form.requestSubmit();
       await new Promise(resolve => setTimeout(resolve, 1800));
-      return { success: Boolean(document.querySelector('.admin-desk')), error: document.querySelector('.admin-login-error')?.textContent || null };
+      const desk = document.querySelector('.admin-desk');
+      const tabs = document.querySelector('.admin-tabs');
+      const initialEditor = document.querySelector('.admin-editor');
+      const initialList = document.querySelector('.content-list');
+      const isFlatTabs = tabs ? getComputedStyle(tabs).borderRadius === '0px' : false;
+      const isFlatPanel = panel => panel && getComputedStyle(panel).borderRadius === '0px' && getComputedStyle(panel).boxShadow === 'none';
+      const tabNames = ['作品', '本棚', '写真'];
+      const tabResults = [];
+      for (const tabName of tabNames) {
+        const tab = Array.from(document.querySelectorAll('.admin-tabs button')).find(button => button.textContent?.includes(tabName));
+        tab?.click();
+        await new Promise(resolve => setTimeout(resolve, 350));
+        const editor = document.querySelector('.admin-editor');
+        const list = document.querySelector('.content-list');
+        tabResults.push(Boolean(editor && list && isFlatPanel(editor) && isFlatPanel(list)));
+      }
+      const success = Boolean(desk && tabs && initialEditor && initialList && isFlatTabs && isFlatPanel(initialEditor) && isFlatPanel(initialList) && tabResults.every(Boolean));
+      return { success, error: document.querySelector('.admin-login-error')?.textContent || null, reason: !desk ? 'admin_desk_missing' : !initialEditor || !initialList ? 'posts_editor_or_list_missing' : !tabResults.every(Boolean) ? 'content_tab_editor_or_list_not_flat' : !isFlatTabs ? 'admin_theme_not_flat' : null };
     })()
   `);
   if (!result?.success) throw new Error(result?.error || result?.reason || "admin_dashboard_not_visible");

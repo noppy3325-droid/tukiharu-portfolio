@@ -41,15 +41,20 @@ try {
   await wait(1200);
   const result = await evaluate(target.webSocketDebuggerUrl, `
     (async () => {
-      const routes = ['/works', '/library', '/photos', '/blog'];
+      const grid = document.querySelector('.gallery-grid');
+      if (!grid) return { success: false, reason: 'gallery_grid_missing' };
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      const hasGalleryContents = document.querySelectorAll('.gallery-card').length > 0 || /公開コンテンツ/.test(grid.textContent || '');
+      if (!hasGalleryContents) return { success: false, reason: 'gallery_contents_missing' };
+      const routes = ['/works', '/photos', '/blog', '/about'];
       if (document.title !== '月春の資材置き場') return { success: false, reason: 'title_not_updated' };
       for (const route of routes) {
-        const selector = location.pathname === '/' ? 'a.tsuki-shortcut[href="' + route + '"]' : 'header a[href="' + route + '"]';
+        const selector = 'header a[href="' + route + '"]';
         const link = document.querySelector(selector);
         if (!link) return { success: false, reason: 'page_link_missing_' + route };
         link.click();
         await new Promise(resolve => setTimeout(resolve, 550));
-        const pageContent = route === '/blog' ? document.querySelector('.simple-blog-hero') : document.querySelector('.tsuki-subhero');
+        const pageContent = route === '/blog' ? document.querySelector('.simple-blog-hero') : document.querySelector('.gallery-page-heading, .tsuki-subhero');
         if (location.pathname !== route || !pageContent) return { success: false, reason: 'page_navigation_failed_' + route };
       }
       return { success: true };
