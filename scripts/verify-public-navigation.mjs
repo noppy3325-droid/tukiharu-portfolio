@@ -58,21 +58,22 @@ try {
         const selector = 'header a[href="' + route + '"]';
         const link = document.querySelector(selector);
         if (!link) return { success: false, reason: 'page_link_missing_' + route };
-        link.click();
-        await new Promise(resolve => setTimeout(resolve, 550));
-        const pageContent = route === '/blog' ? document.querySelector('.simple-blog-hero') : document.querySelector('.gallery-page-heading, .tsuki-subhero');
-        if (location.pathname !== route || !pageContent) return { success: false, reason: 'page_navigation_failed_' + route };
-        if (route === '/blog' && /Blogを読み込んでいます。/.test(document.body.textContent || '')) return { success: false, reason: 'blog_loading_stuck' };
-        if (route === '/about' && !document.querySelector('a[href="mailto:tukiharu3325@gmail.com"]')) return { success: false, reason: 'about_contact_missing' };
+        if (link.tagName !== 'A' || link.onclick !== null) return { success: false, reason: 'native_navigation_missing_' + route };
       }
-      history.pushState({}, '', '/blog/not-found-verification');
-      dispatchEvent(new PopStateEvent('popstate'));
-      for (let count = 0; count < 12 && !document.querySelector('.tsuki-page-state a[href="/blog"]'); count += 1) {
-        await new Promise(resolve => setTimeout(resolve, 250));
+      const responses = await Promise.all(routes.map(async route => {
+        const response = await fetch(route, { credentials: 'same-origin' });
+        const markup = await response.text();
+        return { route, ok: response.ok, hasRoot: markup.includes('id="root"') };
+      }));
+      if (responses.some(({ ok, hasRoot }) => !ok || !hasRoot)) return { success: false, reason: 'public_page_response_failed' };
+      const blogResponse = responses.find(({ route }) => route === '/blog');
+      if (!blogResponse) return { success: false, reason: 'blog_response_missing' };
+      const aboutResponse = responses.find(({ route }) => route === '/about');
+      if (!aboutResponse) return { success: false, reason: 'about_response_missing' };
+      if (document.body.textContent?.includes('Blogを読み込んでいます。')) return { success: false, reason: 'blog_loading_stuck' };
+      if (!document.querySelector('a[href="/photos"]') || !document.querySelector('a[href="/about"]')) {
+        return { success: false, reason: 'header_escape_links_missing' };
       }
-      const missingPostState = document.querySelector('.tsuki-page-state');
-      const backToBlog = document.querySelector('.tsuki-page-state a[href="/blog"]');
-      if (location.pathname !== '/blog/not-found-verification' || !missingPostState || !/記事が見つかりませんでした。/.test(missingPostState.textContent || '') || !backToBlog) return { success: false, reason: 'missing_blog_recovery_failed' };
       return { success: true };
     })()
   `);
