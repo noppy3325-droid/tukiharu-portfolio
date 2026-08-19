@@ -62,9 +62,11 @@ const trpcClient = trpc.createClient({
           // Admin login may run inside an embedded preview, where the browser
           // blocks third-party cookies. Keep this short-lived, signed token in
           // sessionStorage and forward it only to this same-origin API.
-          const adminSession = sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
-          if (adminSession) {
-            headers[ADMIN_SESSION_HEADER] = adminSession;
+          if (import.meta.env.DEV) {
+            const adminSession = sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
+            if (adminSession) {
+              headers[ADMIN_SESSION_HEADER] = adminSession;
+            }
           }
         } catch {
           // sessionStorage unavailable

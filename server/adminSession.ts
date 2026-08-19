@@ -3,7 +3,7 @@ import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 export const ADMIN_SESSION_COOKIE = "little_room_admin_session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 12;
 
-function signingKey() { return process.env.JWT_SECRET || ""; }
+function signingKey() { return process.env.JWT_SECRET; }
 
 export function createPasswordCredential(password: string) {
   const passwordSalt = randomBytes(16).toString("base64url");
@@ -20,18 +20,21 @@ export function verifyAdminPassword(candidate: string, passwordHash: string, pas
 }
 
 export function createAdminSession(now = Date.now()) {
+  const key = signingKey();
+  if (!key) throw new Error("管理者セッション署名鍵が設定されていません。");
   const expiresAt = now + SESSION_DURATION_MS;
   const payload = `admin.${expiresAt}`;
-  const signature = createHmac("sha256", signingKey()).update(payload).digest("base64url");
+  const signature = createHmac("sha256", key).update(payload).digest("base64url");
   return `${payload}.${signature}`;
 }
 
 export function verifyAdminSession(token: string | undefined, now = Date.now()) {
-  if (!token || !signingKey()) return false;
+  const key = signingKey();
+  if (!token || !key) return false;
   const [scope, expiry, signature] = token.split(".");
   if (scope !== "admin" || !expiry || !signature) return false;
   const payload = `${scope}.${expiry}`;
-  const expected = createHmac("sha256", signingKey()).update(payload).digest("base64url");
+  const expected = createHmac("sha256", key).update(payload).digest("base64url");
   const suppliedBuffer = Buffer.from(signature);
   const expectedBuffer = Buffer.from(expected);
   if (suppliedBuffer.length !== expectedBuffer.length || !timingSafeEqual(suppliedBuffer, expectedBuffer)) return false;

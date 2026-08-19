@@ -1,22 +1,25 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PageTransition } from "@/components/PageTransition";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
+import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Admin from "./pages/Admin";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Library from "./pages/Library";
-import Photos from "./pages/Photos";
-import Works from "./pages/Works";
+
+const Admin = lazy(() => import("./pages/Admin"));
+const About = lazy(() => import("./pages/About"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Home = lazy(() => import("./pages/Home"));
+const Library = lazy(() => import("./pages/Library"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Photos = lazy(() => import("./pages/Photos"));
+const Works = lazy(() => import("./pages/Works"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
+    <Suspense fallback={<main className="tsuki-page-state">ページを準備しています。</main>}>
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/about"} component={About} />
@@ -30,6 +33,7 @@ function Router() {
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
+    </Suspense>
   );
 }
 

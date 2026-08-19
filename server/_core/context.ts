@@ -41,7 +41,7 @@ export async function createContext(
   const adminSessionToken = getAdminSessionToken(
     opts.req.headers.cookie,
     opts.req.cookies as Record<string, string | undefined> | undefined,
-    opts.req.headers[ADMIN_SESSION_HEADER]
+    process.env.NODE_ENV === "production" ? undefined : opts.req.headers[ADMIN_SESSION_HEADER]
   );
   return {
     req: opts.req,

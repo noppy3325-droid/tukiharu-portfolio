@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as db from "../db";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { ownerProcedure } from "./guards";
+import { sanitizeBlogHtml, sanitizeBlogPost } from "../sanitizeBlogHtml";
 
 const postInput = z.object({
   title: z.string().min(1).max(200), slug: z.string().min(1).max(220).regex(/^[a-z0-9-]+$/, "スラッグは半角英数字とハイフンを使用してください。"),
@@ -10,13 +11,19 @@ const postInput = z.object({
 });
 const idInput = z.object({ id: z.number().int().positive() });
 
+function sanitizePostContent(content: string) {
+  const sanitized = sanitizeBlogHtml(content).trim();
+  if (!sanitized) throw new TRPCError({ code: "BAD_REQUEST", message: "本文に安全な文章または画像を入力してください。" });
+  return sanitized;
+}
+
 export const blogRouter = router({
-  list: publicProcedure.query(() => db.listPublishedPosts()),
+  list: publicProcedure.query(async () => (await db.listPublishedPosts()).map(sanitizeBlogPost)),
   navigation: publicProcedure.input(idInput).query(({ input }) => db.getAdjacentPublishedPosts(input.id)),
   bySlug: publicProcedure.input(z.object({ slug: z.string().min(1) })).query(async ({ input }) => {
     const post = await db.getPublishedPostBySlug(input.slug);
     if (!post) throw new TRPCError({ code: "NOT_FOUND", message: "記事が見つかりません。" });
-    return post;
+    return sanitizeBlogPost(post);
   }),
   comments: publicProcedure.input(idInput).query(({ input }) => db.listComments(input.id)),
   likes: publicProcedure.input(idInput).query(({ input }) => db.getLikeCount(input.id)),
@@ -31,9 +38,9 @@ export const blogRouter = router({
 
 export const adminBlogRouter = router({
   posts: router({
-    list: ownerProcedure.query(() => db.listAllPosts()),
-    create: ownerProcedure.input(postInput).mutation(({ input }) => db.createPost(input)),
-    update: ownerProcedure.input(idInput.merge(postInput)).mutation(({ input }) => db.updatePost(input.id, input)),
+    list: ownerProcedure.query(async () => (await db.listAllPosts()).map(sanitizeBlogPost)),
+    create: ownerProcedure.input(postInput).mutation(({ input }) => db.createPost({ ...input, content: sanitizePostContent(input.content) })),
+    update: ownerProcedure.input(idInput.merge(postInput)).mutation(({ input }) => db.updatePost(input.id, { ...input, content: sanitizePostContent(input.content) })),
     remove: ownerProcedure.input(idInput).mutation(({ input }) => db.deletePost(input.id)),
   }),
   comments: router({

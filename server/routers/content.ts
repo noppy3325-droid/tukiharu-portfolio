@@ -5,10 +5,11 @@ import { publicProcedure, router } from "../_core/trpc";
 import { createImageStorageKey, decodeAndValidateImage, IMAGE_UPLOAD_BASE64_MAX_LENGTH, allowedImageMimeTypes } from "../imageUpload";
 import { ownerProcedure } from "./guards";
 import { storagePut } from "../storage";
+import { isAllowedContentImageUrl, isHttpsUrl } from "../contentUrl";
 
-const contentImageUrl = z.string().max(2048).refine(value => value.startsWith("/manus-storage/") || z.string().url().safeParse(value).success, "画像URLを入力してください。");
+const contentImageUrl = z.string().max(2048).refine(isAllowedContentImageUrl, "HTTPSまたはアップロード済みの画像URLを入力してください。");
 const optionalContentImageUrl = contentImageUrl.optional().or(z.literal(""));
-const workInput = z.object({ title: z.string().min(1).max(160), summary: z.string().min(1).max(2000), category: z.string().min(1).max(80), url: z.string().url().optional().or(z.literal("")), thumbnailUrl: optionalContentImageUrl, accent: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
+const workInput = z.object({ title: z.string().min(1).max(160), summary: z.string().min(1).max(2000), category: z.string().min(1).max(80), url: z.string().max(2048).refine(value => value === "" || isHttpsUrl(value), "作品リンクはHTTPS URLを入力してください。"), thumbnailUrl: optionalContentImageUrl, accent: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
 const bookInput = z.object({ title: z.string().min(1).max(180), author: z.string().min(1).max(160), note: z.string().min(1).max(2000), coverImageUrl: optionalContentImageUrl, coverColor: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
 const galleryInput = z.object({ title: z.string().min(1).max(160), caption: z.string().min(1).max(2000), imageUrl: contentImageUrl, camera: z.string().max(180).optional().or(z.literal("")), lens: z.string().max(180).optional().or(z.literal("")), location: z.string().max(240).optional().or(z.literal("")), takenAt: z.date().nullable(), rotation: z.number().int().min(-20).max(20), sortOrder: z.number().int().min(0).max(999) });
 const idInput = z.object({ id: z.number().int().positive() });

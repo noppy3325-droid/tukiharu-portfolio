@@ -69,7 +69,7 @@ export default function RichTextEditor({ value, onChange, label = "本文" }: Ri
       <button type="button" onClick={() => command("insertUnorderedList")} aria-label="箇条書き"><List size={16} /></button>
       <button type="button" onClick={() => command("insertOrderedList")} aria-label="番号付きリスト"><ListOrdered size={16} /></button>
       <input ref={fileInputRef} id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => void uploadImage(event.target.files?.[0])} />
-      <label className="editor-image-action" htmlFor={inputId} onMouseDown={rememberSelection} aria-label="画像を圧縮して本文へ挿入"><ImagePlus size={16} />{upload.isPending && <LoaderCircle className="animate-spin" size={13} />}</label>
+      <label className="editor-image-action" htmlFor={inputId} onMouseDown={rememberSelection} aria-label="画像を圧縮して本文へ挿入" title="画像を圧縮して本文へ挿入"><ImagePlus size={16} /><span>本文画像</span>{upload.isPending && <LoaderCircle className="animate-spin" size={13} />}</label>
     </div>
     {imageStatus && <p className={upload.error || imageStatus.includes("してください") || imageStatus.includes("できません") ? "editor-image-error" : "editor-image-status"}>{imageStatus}</p>}
     <div ref={editorRef} className="rich-editor" contentEditable suppressContentEditableWarning onMouseUp={rememberSelection} onKeyUp={rememberSelection} onFocus={rememberSelection} onInput={event => { onChange(event.currentTarget.innerHTML); rememberSelection(); }} data-placeholder="ここに記事本文を書いてね…" />

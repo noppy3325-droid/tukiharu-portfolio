@@ -8,6 +8,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { adminBlogRouter, blogRouter } from "./routers/blog";
 import { adminContentRouter, contentRouter } from "./routers/content";
+import { adminLoginKey, canAttemptAdminLogin, clearAdminLoginFailures, recordFailedAdminLogin } from "./adminLoginRateLimit";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -25,10 +26,16 @@ export const appRouter = router({
   adminAccess: router({
     status: publicProcedure.query(({ ctx }) => ({ isAdmin: Boolean(ctx.isAdmin) })),
     login: publicProcedure.input(z.object({ password: z.string().min(1).max(1024) })).mutation(async ({ ctx, input }) => {
+      const loginKey = adminLoginKey(ctx.req.headers, ctx.req.socket?.remoteAddress || "unknown");
+      if (!canAttemptAdminLogin(loginKey)) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "ログイン試行が多すぎます。しばらくしてから再試行してください。" });
+      }
       const credential = await getAdminCredential();
       if (!credential || !verifyAdminPassword(input.password, credential.passwordHash, credential.passwordSalt)) {
+        recordFailedAdminLogin(loginKey);
         throw new TRPCError({ code: "UNAUTHORIZED", message: "パスワードが正しくありません。" });
       }
+      clearAdminLoginFailures(loginKey);
       const cookieOptions = getSessionCookieOptions(ctx.req);
       const sessionToken = createAdminSession();
       ctx.res.cookie(ADMIN_SESSION_COOKIE, sessionToken, { ...cookieOptions, maxAge: 1000 * 60 * 60 * 12 });
