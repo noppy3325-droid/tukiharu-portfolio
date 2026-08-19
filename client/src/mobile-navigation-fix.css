@@ -1,0 +1,44 @@
+/* Decorative page layers must never consume taps. */
+body::before,
+body::after {
+  pointer-events: none !important;
+}
+
+/* Navigation must remain above every page-level stacking context. */
+.gallery-header {
+  position: relative;
+  z-index: 10000;
+}
+
+.gallery-header .gallery-desktop-nav,
+.gallery-header .gallery-mobile-menu {
+  position: relative;
+  z-index: 10001;
+}
+
+.gallery-mobile-menu {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-slot="sheet-overlay"] {
+  z-index: 10010 !important;
+}
+
+[data-slot="sheet-content"].gallery-mobile-sheet {
+  z-index: 10011 !important;
+  touch-action: manipulation;
+}
+
+.gallery-mobile-nav,
+.gallery-mobile-nav a {
+  position: relative;
+  z-index: 10012;
+  touch-action: manipulation;
+}
+
+.gallery-shell .simple-portfolio {
+  position: relative;
+  z-index: 0;
+}
