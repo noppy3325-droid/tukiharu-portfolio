@@ -1,13 +1,22 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "../db";
 import { publicProcedure, router } from "../_core/trpc";
+import { createImageStorageKey, decodeAndValidateImage, IMAGE_UPLOAD_BASE64_MAX_LENGTH, allowedImageMimeTypes } from "../imageUpload";
 import { ownerProcedure } from "./guards";
+import { storagePut } from "../storage";
 
 const workInput = z.object({ title: z.string().min(1).max(160), summary: z.string().min(1).max(2000), category: z.string().min(1).max(80), url: z.string().url().optional().or(z.literal("")), accent: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
 const bookInput = z.object({ title: z.string().min(1).max(180), author: z.string().min(1).max(160), note: z.string().min(1).max(2000), coverColor: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
-const galleryInput = z.object({ title: z.string().min(1).max(160), caption: z.string().min(1).max(2000), imageUrl: z.string().url().max(2048), camera: z.string().max(180).optional().or(z.literal("")), lens: z.string().max(180).optional().or(z.literal("")), location: z.string().max(240).optional().or(z.literal("")), takenAt: z.date().nullable(), rotation: z.number().int().min(-20).max(20), sortOrder: z.number().int().min(0).max(999) });
+const galleryImageUrl = z.string().max(2048).refine(value => value.startsWith("/manus-storage/") || z.string().url().safeParse(value).success, "画像URLを入力してください。");
+const galleryInput = z.object({ title: z.string().min(1).max(160), caption: z.string().min(1).max(2000), imageUrl: galleryImageUrl, camera: z.string().max(180).optional().or(z.literal("")), lens: z.string().max(180).optional().or(z.literal("")), location: z.string().max(240).optional().or(z.literal("")), takenAt: z.date().nullable(), rotation: z.number().int().min(-20).max(20), sortOrder: z.number().int().min(0).max(999) });
 const idInput = z.object({ id: z.number().int().positive() });
 const introductionInput = z.object({ introduction: z.string().trim().min(1, "自己紹介文を入力してください。").max(3000) });
+const imageUploadInput = z.object({
+  filename: z.string().trim().min(1).max(255),
+  mimeType: z.enum(allowedImageMimeTypes),
+  base64: z.string().min(4).max(IMAGE_UPLOAD_BASE64_MAX_LENGTH),
+});
 
 export const contentRouter = router({
   profile: router({ get: publicProcedure.query(() => db.getSiteSettings()) }),
@@ -38,5 +47,16 @@ export const adminContentRouter = router({
     create: ownerProcedure.input(galleryInput).mutation(({ input }) => db.createGalleryItem({ ...input, camera: input.camera || null, lens: input.lens || null, location: input.location || null })),
     update: ownerProcedure.input(idInput.merge(galleryInput)).mutation(({ input }) => db.updateGalleryItem(input.id, { ...input, camera: input.camera || null, lens: input.lens || null, location: input.location || null })),
     remove: ownerProcedure.input(idInput).mutation(({ input }) => db.deleteGalleryItem(input.id)),
+  }),
+  upload: router({
+    image: ownerProcedure.input(imageUploadInput).mutation(async ({ input }) => {
+      try {
+        const data = decodeAndValidateImage(input.base64, input.mimeType);
+        return await storagePut(createImageStorageKey(input.filename, input.mimeType), data, input.mimeType);
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : "画像をアップロードできませんでした。" });
+      }
+    }),
   }),
 });

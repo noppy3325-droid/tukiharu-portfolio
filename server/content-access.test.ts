@@ -8,8 +8,10 @@ const dbMock = vi.hoisted(() => ({
   listPublishedPosts: vi.fn(), getAdjacentPublishedPosts: vi.fn(), getLikeCount: vi.fn(), addLike: vi.fn(), removeLike: vi.fn(),
   getPublishedPostById: vi.fn(), addComment: vi.fn(), listComments: vi.fn(),
 }));
+const storageMock = vi.hoisted(() => ({ storagePut: vi.fn() }));
 
 vi.mock("./db", () => dbMock);
+vi.mock("./storage", () => storageMock);
 import { appRouter } from "./routers";
 
 function context(role: "admin" | "user" | null, isAdmin = false, email = "test@example.com"): TrpcContext {
@@ -55,6 +57,29 @@ describe("コンテンツと権限のAPI", () => {
     const caller = appRouter.createCaller(context(null, true));
     await expect(caller.admin.content.gallery.create({ title: "Morning window", caption: "やわらかな朝の光", imageUrl: "https://example.com/photo.jpg", camera: "Canon EOS R6", lens: "RF 50mm F1.8", location: "Seoul", takenAt, rotation: -2, sortOrder: 1 })).resolves.toEqual({ success: true });
     expect(dbMock.createGalleryItem).toHaveBeenCalledWith(expect.objectContaining({ camera: "Canon EOS R6", lens: "RF 50mm F1.8", location: "Seoul", takenAt }));
+  });
+
+  it("S3アップロードで返る相対URLをGallery項目として保存できる", async () => {
+    dbMock.createGalleryItem.mockResolvedValue({ success: true });
+    const caller = appRouter.createCaller(context(null, true));
+    await expect(caller.admin.content.gallery.create({ title: "S3写真", caption: "S3から配信", imageUrl: "/manus-storage/gallery/2026-08/window.png", camera: "", lens: "", location: "", takenAt: null, rotation: 0, sortOrder: 0 })).resolves.toEqual({ success: true });
+    expect(dbMock.createGalleryItem).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: "/manus-storage/gallery/2026-08/window.png" }));
+  });
+
+  it("有効な管理者セッションだけが検証済みの画像をS3へアップロードできる", async () => {
+    const pngBase64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]).toString("base64");
+    storageMock.storagePut.mockResolvedValue({ key: "gallery/2026-08/window_a1b2c3d4.png", url: "/manus-storage/gallery/2026-08/window_a1b2c3d4.png" });
+
+    await expect(appRouter.createCaller(context("user")).admin.content.upload.image({ filename: "window.png", mimeType: "image/png", base64: pngBase64 })).rejects.toMatchObject({ code: "FORBIDDEN" } satisfies Partial<TRPCError>);
+    await expect(appRouter.createCaller(context(null, true)).admin.content.upload.image({ filename: "window.png", mimeType: "image/png", base64: pngBase64 })).resolves.toMatchObject({ url: "/manus-storage/gallery/2026-08/window_a1b2c3d4.png" });
+    expect(storageMock.storagePut).toHaveBeenCalledWith(expect.stringMatching(/^gallery\/\d{4}-\d{2}\/window\.png$/), expect.any(Buffer), "image/png");
+  });
+
+  it("画像データの形式偽装はS3へ保存しない", async () => {
+    const spoofedBase64 = Buffer.from("not-a-real-png").toString("base64");
+
+    await expect(appRouter.createCaller(context(null, true)).admin.content.upload.image({ filename: "spoof.png", mimeType: "image/png", base64: spoofedBase64 })).rejects.toMatchObject({ code: "BAD_REQUEST" } satisfies Partial<TRPCError>);
+    expect(storageMock.storagePut).not.toHaveBeenCalled();
   });
 
   it("匿名のいいねは投稿IDと訪問者キーで記録できる", async () => {
