@@ -31,6 +31,19 @@ body::after {
   touch-action: manipulation;
 }
 
+/* The owner menu uses the same Radix Sheet portal. Keep its panel above the dimming layer too. */
+[data-slot="sheet-content"].admin-section-sheet {
+  z-index: 10011 !important;
+  touch-action: manipulation;
+}
+
+.admin-section-sheet .admin-section-list,
+.admin-section-sheet .admin-section-list button {
+  position: relative;
+  z-index: 10012;
+  touch-action: manipulation;
+}
+
 .gallery-mobile-nav,
 .gallery-mobile-nav a {
   position: relative;

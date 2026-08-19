@@ -15,6 +15,12 @@ describe("mobile Blog navigation safeguards", () => {
     expect(mobileStyles).toContain("cursor: pointer");
   });
 
+  it("keeps the mobile owner menu sheet above its dimming overlay", () => {
+    expect(mobileStyles).toContain('[data-slot="sheet-content"].admin-section-sheet');
+    expect(mobileStyles).toMatch(/admin-section-sheet \{\s*z-index: 10011 !important;/);
+    expect(mobileStyles).toContain(".admin-section-sheet .admin-section-list button");
+  });
+
   it("prevents decorative layers and leaving pages from receiving touch events", () => {
     expect(mobileStyles).toMatch(/body::before,[\s\S]*pointer-events: none !important/);
     expect(globalStyles).toContain("html.page-is-leaving .tsuki-page { opacity:0; pointer-events:none;");
