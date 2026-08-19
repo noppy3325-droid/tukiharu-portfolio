@@ -1,6 +1,6 @@
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { adminCredentials, blogComments, blogLikes, blogPosts, books, galleryItems, InsertUser, siteSettings, users, works } from "../drizzle/schema";
+import { adminCredentials, adminLoginAttempts, blogComments, blogLikes, blogPosts, books, galleryItems, InsertUser, siteSettings, users, works } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -91,6 +91,17 @@ async function requireDb() {
 
 export async function getAdminCredential() { const db = await requireDb(); const rows = await db.select().from(adminCredentials).where(eq(adminCredentials.id, 1)).limit(1); return rows[0]; }
 export async function setAdminCredential(passwordHash: string, passwordSalt: string) { const db = await requireDb(); await db.insert(adminCredentials).values({ id: 1, passwordHash, passwordSalt }).onDuplicateKeyUpdate({ set: { passwordHash, passwordSalt } }); return { success: true }; }
+export async function getAdminLoginAttempt(keyHash: string) { const db = await requireDb(); const rows = await db.select().from(adminLoginAttempts).where(eq(adminLoginAttempts.keyHash, keyHash)).limit(1); return rows[0]; }
+export async function recordAdminLoginFailure(keyHash: string, attemptedAt: Date, expiredBefore: Date) {
+  const db = await requireDb();
+  await db.insert(adminLoginAttempts).values({ keyHash, failedAttempts: 1, windowStartedAt: attemptedAt }).onDuplicateKeyUpdate({
+    set: {
+      failedAttempts: sql`IF(${adminLoginAttempts.windowStartedAt} < ${expiredBefore}, 1, ${adminLoginAttempts.failedAttempts} + 1)`,
+      windowStartedAt: sql`IF(${adminLoginAttempts.windowStartedAt} < ${expiredBefore}, ${attemptedAt}, ${adminLoginAttempts.windowStartedAt})`,
+    },
+  });
+}
+export async function clearAdminLoginAttempt(keyHash: string) { const db = await requireDb(); await db.delete(adminLoginAttempts).where(eq(adminLoginAttempts.keyHash, keyHash)); }
 
 const DEFAULT_INTRODUCTION = "つくったもの、読んだもの、Gallery、日々のBlog記事をまとめる個人のアーカイブです。気になることがあれば、下のメールアドレスから気軽にご連絡ください。";
 export async function getSiteSettings() { const db = await requireDb(); const rows = await db.select().from(siteSettings).where(eq(siteSettings.id, 1)).limit(1); return rows[0] ?? { id: 1, introduction: DEFAULT_INTRODUCTION, updatedAt: null }; }

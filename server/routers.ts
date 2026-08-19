@@ -27,15 +27,15 @@ export const appRouter = router({
     status: publicProcedure.query(({ ctx }) => ({ isAdmin: Boolean(ctx.isAdmin) })),
     login: publicProcedure.input(z.object({ password: z.string().min(1).max(1024) })).mutation(async ({ ctx, input }) => {
       const loginKey = adminLoginKey(ctx.req.headers, ctx.req.socket?.remoteAddress || "unknown");
-      if (!canAttemptAdminLogin(loginKey)) {
+      if (!await canAttemptAdminLogin(loginKey)) {
         throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "ログイン試行が多すぎます。しばらくしてから再試行してください。" });
       }
       const credential = await getAdminCredential();
       if (!credential || !verifyAdminPassword(input.password, credential.passwordHash, credential.passwordSalt)) {
-        recordFailedAdminLogin(loginKey);
+        await recordFailedAdminLogin(loginKey);
         throw new TRPCError({ code: "UNAUTHORIZED", message: "パスワードが正しくありません。" });
       }
-      clearAdminLoginFailures(loginKey);
+      await clearAdminLoginFailures(loginKey);
       const cookieOptions = getSessionCookieOptions(ctx.req);
       const sessionToken = createAdminSession();
       ctx.res.cookie(ADMIN_SESSION_COOKIE, sessionToken, { ...cookieOptions, maxAge: 1000 * 60 * 60 * 12 });

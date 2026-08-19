@@ -1,4 +1,5 @@
 import { acceptedImageMimeTypes, compressImageForUpload, formatImageBytes, readFileAsBase64, validateImageSelection } from "@/lib/imageUpload";
+import { buildInlineBlogImageHtml } from "@/lib/richTextImage";
 import { trpc } from "@/lib/trpc";
 import { Bold, ImagePlus, Italic, List, ListOrdered, LoaderCircle, Pilcrow } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
@@ -9,14 +10,18 @@ export default function RichTextEditor({ value, onChange, label = "本文" }: Ri
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
+  const pendingImageAltRef = useRef("");
   const inputId = useId();
   const [imageStatus, setImageStatus] = useState<string | null>(null);
+  const [imageAltText, setImageAltText] = useState("");
   const upload = trpc.admin.content.upload.image.useMutation({
     onSuccess: result => {
       restoreSelection();
-      document.execCommand("insertHTML", false, `<img src="${result.url}" alt="" />`);
+      document.execCommand("insertHTML", false, buildInlineBlogImageHtml(result.url, pendingImageAltRef.current));
       onChange(editorRef.current?.innerHTML || "");
-      setImageStatus("圧縮済み画像を本文へ挿入しました。");
+      setImageStatus(pendingImageAltRef.current.trim() ? "圧縮済み画像と代替テキストを本文へ挿入しました。" : "圧縮済み画像を装飾画像として本文へ挿入しました。");
+      setImageAltText("");
+      pendingImageAltRef.current = "";
       if (fileInputRef.current) fileInputRef.current.value = "";
     },
   });
@@ -54,6 +59,7 @@ export default function RichTextEditor({ value, onChange, label = "本文" }: Ri
       const compressed = await compressImageForUpload(file);
       setImageStatus(`圧縮後 ${formatImageBytes(compressed.compressedBytes)}。S3へアップロードしています…`);
       const base64 = await readFileAsBase64(compressed.file);
+      pendingImageAltRef.current = imageAltText;
       upload.mutate({ filename: compressed.file.name, mimeType: compressed.file.type as (typeof acceptedImageMimeTypes)[number], base64, scope: "blog" });
     } catch (error) {
       setImageStatus(error instanceof Error ? error.message : "画像を挿入できませんでした。");
@@ -68,9 +74,14 @@ export default function RichTextEditor({ value, onChange, label = "本文" }: Ri
       <button type="button" onClick={() => command("formatBlock", "h2")} aria-label="見出し"><Pilcrow size={16} /></button>
       <button type="button" onClick={() => command("insertUnorderedList")} aria-label="箇条書き"><List size={16} /></button>
       <button type="button" onClick={() => command("insertOrderedList")} aria-label="番号付きリスト"><ListOrdered size={16} /></button>
+      <label className="editor-image-alt" htmlFor={`${inputId}-alt`}>
+        <span>画像の説明</span>
+        <input id={`${inputId}-alt`} value={imageAltText} onChange={event => setImageAltText(event.target.value)} placeholder="例：窓辺に置いたフィルムカメラ" maxLength={240} />
+      </label>
       <input ref={fileInputRef} id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => void uploadImage(event.target.files?.[0])} />
       <label className="editor-image-action" htmlFor={inputId} onMouseDown={rememberSelection} aria-label="画像を圧縮して本文へ挿入" title="画像を圧縮して本文へ挿入"><ImagePlus size={16} /><span>本文画像</span>{upload.isPending && <LoaderCircle className="animate-spin" size={13} />}</label>
     </div>
+    <p className="editor-image-help">画像の説明は公開ページの代替テキストとして保存されます。装飾目的の画像は空欄のまま挿入できます。</p>
     {imageStatus && <p className={upload.error || imageStatus.includes("してください") || imageStatus.includes("できません") ? "editor-image-error" : "editor-image-status"}>{imageStatus}</p>}
     <div ref={editorRef} className="rich-editor" contentEditable suppressContentEditableWarning onMouseUp={rememberSelection} onKeyUp={rememberSelection} onFocus={rememberSelection} onInput={event => { onChange(event.currentTarget.innerHTML); rememberSelection(); }} data-placeholder="ここに記事本文を書いてね…" />
   </div>;

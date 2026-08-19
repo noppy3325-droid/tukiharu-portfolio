@@ -1,22 +1,26 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { adminLoginKey, canAttemptAdminLogin, clearAdminLoginFailures, recordFailedAdminLogin, resetAdminLoginRateLimitForTest } from "./adminLoginRateLimit";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const dbMock = vi.hoisted(() => ({ getAdminLoginAttempt: vi.fn(), recordAdminLoginFailure: vi.fn(), clearAdminLoginAttempt: vi.fn() }));
+vi.mock("./db", () => dbMock);
+import { LOGIN_WINDOW_MS, adminLoginKey, canAttemptAdminLogin, clearAdminLoginFailures, recordFailedAdminLogin } from "./adminLoginRateLimit";
 
 describe("adminLoginRateLimit", () => {
-  beforeEach(() => resetAdminLoginRateLimitForTest());
+  beforeEach(() => vi.clearAllMocks());
 
-  it("同一送信元の失敗を5回まで記録し、6回目をブロックする", () => {
+  it("共有ストアに5回の失敗がある送信元の6回目をブロックする", async () => {
     const key = "203.0.113.10";
-    for (let count = 0; count < 5; count += 1) recordFailedAdminLogin(key, 1_000);
-    expect(canAttemptAdminLogin(key, 1_001)).toBe(false);
+    dbMock.getAdminLoginAttempt.mockResolvedValue({ failedAttempts: 5, windowStartedAt: new Date(1_000) });
+    await expect(canAttemptAdminLogin(key, 1_001)).resolves.toBe(false);
   });
 
-  it("制限時間の経過または正しいログインで試行制限を解除する", () => {
+  it("期限切れの記録は許可し、失敗と成功を共有ストアへ記録する", async () => {
     const key = "203.0.113.11";
-    for (let count = 0; count < 5; count += 1) recordFailedAdminLogin(key, 1_000);
-    expect(canAttemptAdminLogin(key, 1_000 + 15 * 60 * 1000)).toBe(true);
-    recordFailedAdminLogin(key, 2_000);
-    clearAdminLoginFailures(key);
-    expect(canAttemptAdminLogin(key, 2_001)).toBe(true);
+    dbMock.getAdminLoginAttempt.mockResolvedValue({ failedAttempts: 5, windowStartedAt: new Date(1_000) });
+    await expect(canAttemptAdminLogin(key, 1_000 + LOGIN_WINDOW_MS)).resolves.toBe(true);
+    await recordFailedAdminLogin(key, 2_000);
+    await clearAdminLoginFailures(key);
+    expect(dbMock.recordAdminLoginFailure).toHaveBeenCalledWith(expect.stringMatching(/^[a-f0-9]{64}$/), new Date(2_000), new Date(2_000 - LOGIN_WINDOW_MS));
+    expect(dbMock.clearAdminLoginAttempt).toHaveBeenCalledWith(expect.stringMatching(/^[a-f0-9]{64}$/));
   });
 
   it("転送元IPを優先し、不正な値がない場合はフォールバックを使う", () => {

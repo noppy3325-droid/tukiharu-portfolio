@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ADMIN_SESSION_COOKIE, createPasswordCredential } from "./adminSession";
 import type { TrpcContext } from "./_core/context";
 
-const dbMock = vi.hoisted(() => ({ getAdminCredential: vi.fn(), setAdminCredential: vi.fn() }));
+const dbMock = vi.hoisted(() => ({ getAdminCredential: vi.fn(), setAdminCredential: vi.fn(), getAdminLoginAttempt: vi.fn(), recordAdminLoginFailure: vi.fn(), clearAdminLoginAttempt: vi.fn() }));
 vi.mock("./db", () => dbMock);
 import { appRouter } from "./routers";
 
@@ -13,6 +13,17 @@ function context(isAdmin = false) {
 }
 
 describe("adminAccess", () => {
+  it("管理者ログイン成功時に共有ストア上の失敗記録を削除する", async () => {
+    const password = "test-password-for-admin";
+    const credential = createPasswordCredential(password);
+    dbMock.getAdminCredential.mockResolvedValue({ id: 1, ...credential });
+    dbMock.getAdminLoginAttempt.mockResolvedValue(undefined);
+
+    await appRouter.createCaller(context().ctx).adminAccess.login({ password });
+
+    expect(dbMock.clearAdminLoginAttempt).toHaveBeenCalledWith(expect.stringMatching(/^[a-f0-9]{64}$/));
+  });
+
   it("保存済みハッシュと一致する管理者パスワードでHTTP専用の署名付きCookieを発行する", async () => {
     const password = "test-password-for-admin";
     const credential = createPasswordCredential(password);

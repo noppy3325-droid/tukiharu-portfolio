@@ -19,6 +19,17 @@ export const adminCredentials = mysqlTable("adminCredentials", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+/**
+ * 管理者ログインの失敗回数を全アプリケーションインスタンスで共有するための記録。
+ * 送信元そのものではなく、サーバー側でハッシュ化した識別子だけを保持する。
+ */
+export const adminLoginAttempts = mysqlTable("adminLoginAttempts", {
+  keyHash: varchar("keyHash", { length: 64 }).primaryKey(),
+  failedAttempts: int("failedAttempts").default(0).notNull(),
+  windowStartedAt: timestamp("windowStartedAt").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const siteSettings = mysqlTable("siteSettings", {
   id: int("id").primaryKey(),
   introduction: text("introduction").notNull(),
