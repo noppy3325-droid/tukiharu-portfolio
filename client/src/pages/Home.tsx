@@ -18,8 +18,8 @@ export default function Home() {
   const profile = trpc.content.profile.get.useQuery(undefined, { staleTime: 60_000 });
   const introduction = profile.data?.introduction ?? "つくったもの、読んだもの、Gallery、日々のBlog記事をまとめる個人のアーカイブです。気になることがあれば、下のメールアドレスから気軽にご連絡ください。";
   const entries: GalleryEntry[] = [
-    ...(works.data ?? []).map(item => ({ id: `work-${item.id}`, href: "/works", title: item.title, meta: item.category, date: item.updatedAt, kind: "work" as const })),
-    ...(books.data ?? []).map(item => ({ id: `book-${item.id}`, href: "/library", title: item.title, meta: item.author, date: item.updatedAt, kind: "book" as const })),
+    ...(works.data ?? []).map(item => ({ id: `work-${item.id}`, href: "/works", title: item.title, meta: item.category, date: item.updatedAt, kind: "work" as const, imageUrl: item.thumbnailUrl })),
+    ...(books.data ?? []).map(item => ({ id: `book-${item.id}`, href: "/library", title: item.title, meta: item.author, date: item.updatedAt, kind: "book" as const, imageUrl: item.coverImageUrl })),
     ...(photos.data ?? []).map(item => ({ id: `photo-${item.id}`, href: "/photos", title: item.title, meta: "Gallery", date: item.updatedAt, kind: "photo" as const, imageUrl: item.imageUrl })),
     ...(notes.data ?? []).map(item => ({ id: `note-${item.id}`, href: `/blog/${item.slug}`, title: item.title, meta: "Blog", date: item.updatedAt, kind: "note" as const })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 12);

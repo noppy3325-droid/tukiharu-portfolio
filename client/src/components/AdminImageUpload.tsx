@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { acceptedImageMimeTypes, compressImageForUpload, formatImageBytes, type CompressedImage, validateImageSelection } from "@/lib/imageUpload";
+import { acceptedImageMimeTypes, compressImageForUpload, formatImageBytes, readFileAsBase64, type CompressedImage, validateImageSelection } from "@/lib/imageUpload";
 import { trpc } from "@/lib/trpc";
 import { ImagePlus, LoaderCircle, Upload, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
@@ -7,25 +7,10 @@ import { useEffect, useId, useRef, useState } from "react";
 type AdminImageUploadProps = {
   value: string;
   onChange: (url: string) => void;
+  scope?: "gallery" | "works" | "books" | "blog";
 };
 
-function readFileAsBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error("画像を読み込めませんでした。"));
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result !== "string" || !result.includes(",")) {
-        reject(new Error("画像データの形式が正しくありません。"));
-        return;
-      }
-      resolve(result.split(",", 2)[1] ?? "");
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-export function AdminImageUpload({ value, onChange }: AdminImageUploadProps) {
+export function AdminImageUpload({ value, onChange, scope = "gallery" }: AdminImageUploadProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<CompressedImage | null>(null);
@@ -79,6 +64,7 @@ export function AdminImageUpload({ value, onChange }: AdminImageUploadProps) {
         filename: selectedImage.file.name,
         mimeType: selectedImage.file.type as (typeof acceptedImageMimeTypes)[number],
         base64,
+        scope,
       });
     } catch (error) {
       setSelectionError(error instanceof Error ? error.message : "画像を読み込めませんでした。");

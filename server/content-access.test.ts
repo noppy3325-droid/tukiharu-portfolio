@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
 const dbMock = vi.hoisted(() => ({
-  listWorks: vi.fn(), listBooks: vi.fn(), listGalleryItems: vi.fn(), createGalleryItem: vi.fn(),
+  listWorks: vi.fn(), listBooks: vi.fn(), listGalleryItems: vi.fn(), createWork: vi.fn(), createBook: vi.fn(), createGalleryItem: vi.fn(),
   getSiteSettings: vi.fn(), setSiteIntroduction: vi.fn(),
   listPublishedPosts: vi.fn(), getAdjacentPublishedPosts: vi.fn(), getLikeCount: vi.fn(), addLike: vi.fn(), removeLike: vi.fn(),
   getPublishedPostById: vi.fn(), addComment: vi.fn(), listComments: vi.fn(),
@@ -66,6 +66,16 @@ describe("コンテンツと権限のAPI", () => {
     expect(dbMock.createGalleryItem).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: "/manus-storage/gallery/2026-08/window.png" }));
   });
 
+  it("管理者はWorksサムネイルとBooks表紙のS3 URLを保存できる", async () => {
+    dbMock.createWork.mockResolvedValue({ success: true });
+    dbMock.createBook.mockResolvedValue({ success: true });
+    const caller = appRouter.createCaller(context(null, true));
+    await expect(caller.admin.content.works.create({ title: "画像付き作品", summary: "説明", category: "Web", url: "", thumbnailUrl: "/manus-storage/works/2026-08/sample.webp", accent: "pink", sortOrder: 0 })).resolves.toEqual({ success: true });
+    await expect(caller.admin.content.books.create({ title: "画像付きの本", author: "著者", note: "メモ", coverImageUrl: "/manus-storage/books/2026-08/cover.webp", coverColor: "mint", sortOrder: 0 })).resolves.toEqual({ success: true });
+    expect(dbMock.createWork).toHaveBeenCalledWith(expect.objectContaining({ thumbnailUrl: "/manus-storage/works/2026-08/sample.webp" }));
+    expect(dbMock.createBook).toHaveBeenCalledWith(expect.objectContaining({ coverImageUrl: "/manus-storage/books/2026-08/cover.webp" }));
+  });
+
   it("有効な管理者セッションだけが検証済みの画像をS3へアップロードできる", async () => {
     const pngBase64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]).toString("base64");
     storageMock.storagePut.mockResolvedValue({ key: "gallery/2026-08/window_a1b2c3d4.png", url: "/manus-storage/gallery/2026-08/window_a1b2c3d4.png" });
@@ -73,6 +83,8 @@ describe("コンテンツと権限のAPI", () => {
     await expect(appRouter.createCaller(context("user")).admin.content.upload.image({ filename: "window.png", mimeType: "image/png", base64: pngBase64 })).rejects.toMatchObject({ code: "FORBIDDEN" } satisfies Partial<TRPCError>);
     await expect(appRouter.createCaller(context(null, true)).admin.content.upload.image({ filename: "window.png", mimeType: "image/png", base64: pngBase64 })).resolves.toMatchObject({ url: "/manus-storage/gallery/2026-08/window_a1b2c3d4.png" });
     expect(storageMock.storagePut).toHaveBeenCalledWith(expect.stringMatching(/^gallery\/\d{4}-\d{2}\/window\.png$/), expect.any(Buffer), "image/png");
+    await expect(appRouter.createCaller(context(null, true)).admin.content.upload.image({ filename: "cover.png", mimeType: "image/png", base64: pngBase64, scope: "books" })).resolves.toMatchObject({ url: "/manus-storage/gallery/2026-08/window_a1b2c3d4.png" });
+    expect(storageMock.storagePut).toHaveBeenCalledWith(expect.stringMatching(/^books\/\d{4}-\d{2}\/cover\.png$/), expect.any(Buffer), "image/png");
   });
 
   it("画像データの形式偽装はS3へ保存しない", async () => {

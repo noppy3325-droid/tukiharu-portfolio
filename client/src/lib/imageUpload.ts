@@ -2,6 +2,7 @@ export const acceptedImageMimeTypes = ["image/jpeg", "image/png", "image/webp"] 
 export const maxImageUploadBytes = 5 * 1024 * 1024;
 export const maxImageSourceBytes = 20 * 1024 * 1024;
 export const maxImageDimension = 1920;
+export const maxBatchImageCount = 12;
 
 export type CompressedImage = {
   file: File;
@@ -12,12 +13,8 @@ export type CompressedImage = {
 };
 
 export function validateImageSelection(file: Pick<File, "type" | "size">): string | null {
-  if (!(acceptedImageMimeTypes as readonly string[]).includes(file.type)) {
-    return "JPEG・PNG・WebP形式の画像を選択してください。";
-  }
-  if (file.size > maxImageSourceBytes) {
-    return "元画像は20MB以下にしてください。";
-  }
+  if (!(acceptedImageMimeTypes as readonly string[]).includes(file.type)) return "JPEG・PNG・WebP形式の画像を選択してください。";
+  if (file.size > maxImageSourceBytes) return "元画像は20MB以下にしてください。";
   return null;
 }
 
@@ -33,6 +30,23 @@ export function formatImageBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
 }
 
+export function imageTitleFromFilename(filename: string) {
+  return filename.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim() || "Untitled image";
+}
+
+export function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("画像を読み込めませんでした。"));
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== "string" || !result.includes(",")) return reject(new Error("画像データの形式が正しくありません。"));
+      resolve(result.split(",", 2)[1] ?? "");
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -44,9 +58,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("画像を圧縮できませんでした。")), "image/webp", quality);
-  });
+  return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("画像を圧縮できませんでした。")), "image/webp", quality));
 }
 
 export async function compressImageForUpload(source: File): Promise<CompressedImage> {
@@ -61,20 +73,11 @@ export async function compressImageForUpload(source: File): Promise<CompressedIm
 
   let output: Blob | null = null;
   for (const quality of [0.82, 0.72, 0.62, 0.55]) {
-    const candidate = await canvasToBlob(canvas, quality);
-    output = candidate;
-    if (candidate.size <= maxImageUploadBytes) break;
+    output = await canvasToBlob(canvas, quality);
+    if (output.size <= maxImageUploadBytes) break;
   }
-  if (!output || output.size > maxImageUploadBytes) {
-    throw new Error("圧縮後も5MBを超えています。より小さな画像を選択してください。");
-  }
+  if (!output || output.size > maxImageUploadBytes) throw new Error("圧縮後も5MBを超えています。より小さな画像を選択してください。");
 
   const filename = `${source.name.replace(/\.[^.]+$/, "") || "gallery-image"}.webp`;
-  return {
-    file: new File([output], filename, { type: "image/webp", lastModified: Date.now() }),
-    originalBytes: source.size,
-    compressedBytes: output.size,
-    width: target.width,
-    height: target.height,
-  };
+  return { file: new File([output], filename, { type: "image/webp", lastModified: Date.now() }), originalBytes: source.size, compressedBytes: output.size, width: target.width, height: target.height };
 }

@@ -17,5 +17,6 @@ describe("画像アップロードの検証", () => {
   it("保存キーを拡張子と安全なファイル名に正規化する", () => {
     expect(createImageStorageKey("窓辺の写真.PNG", "image/png")).toMatch(/^gallery\/\d{4}-\d{2}\/gallery-image\.png$/);
     expect(createImageStorageKey("spring light.jpg", "image/jpeg")).toMatch(/spring-light\.jpg$/);
+    expect(createImageStorageKey("cover.png", "image/png", "books")).toMatch(/^books\/\d{4}-\d{2}\/cover\.png$/);
   });
 });

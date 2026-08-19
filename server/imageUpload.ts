@@ -29,7 +29,9 @@ export function decodeAndValidateImage(base64: string, mimeType: AllowedImageMim
   return data;
 }
 
-export function createImageStorageKey(fileName: string, mimeType: AllowedImageMimeType): string {
+export type ImageUploadScope = "gallery" | "works" | "books" | "blog";
+
+export function createImageStorageKey(fileName: string, mimeType: AllowedImageMimeType, scope: ImageUploadScope = "gallery"): string {
   const extension = imageExtensions[mimeType];
   const normalizedName = fileName
     .replace(/\.[^.]+$/, "")
@@ -39,5 +41,5 @@ export function createImageStorageKey(fileName: string, mimeType: AllowedImageMi
     .slice(0, 72) || "gallery-image";
 
   const month = new Date().toISOString().slice(0, 7);
-  return `gallery/${month}/${normalizedName}.${extension}`;
+  return `${scope}/${month}/${normalizedName}.${extension}`;
 }

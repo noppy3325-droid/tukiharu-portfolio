@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateImageDimensions, formatImageBytes, maxImageSourceBytes, validateImageSelection } from "./imageUpload";
+import { calculateImageDimensions, formatImageBytes, imageTitleFromFilename, maxImageSourceBytes, validateImageSelection } from "./imageUpload";
 
 describe("管理画面の画像選択", () => {
   it("JPEG・PNG・WebPで元画像上限以内のファイルを受け入れる", () => {
@@ -16,5 +16,6 @@ describe("管理画面の画像選択", () => {
     expect(calculateImageDimensions(1200, 800)).toEqual({ width: 1200, height: 800 });
     expect(formatImageBytes(820 * 1024)).toBe("820KB");
     expect(formatImageBytes(1.25 * 1024 * 1024)).toBe("1.3MB");
+    expect(imageTitleFromFilename("spring_light-01.webp")).toBe("spring light 01");
   });
 });
