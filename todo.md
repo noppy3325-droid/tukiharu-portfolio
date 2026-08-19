@@ -173,3 +173,5 @@
 - [x] デザイン・機能の両スキルを検証し、利用可能な形で提供する
 - [x] 公開サイトの連絡先メールアドレスをtukiharu1125+portfolio@gmail.comへ統一し、mailtoリンクを更新する
 - [x] 新しい連絡先表示とmailtoリンクを確認して公開する
+- [x] 連絡先メールアドレスをtukiharu3325+portfolio@gmail.comへ再訂正し、公開表示とmailtoリンクを確認する
+- [x] テストメールの送信手段を確認し、送信前の承認後にtukiharu3325+portfolio@gmail.comへ送信する

@@ -49,7 +49,7 @@ try {
       const hasGalleryStructure = document.querySelectorAll('.gallery-card').length > 0 || /作品を読み込んでいます。|公開コンテンツ/.test(grid.textContent || '');
       if (!hasGalleryStructure) return { success: false, reason: 'gallery_contents_missing' };
       if (!document.querySelector('.gallery-home-info') || !document.querySelector('.gallery-updates')) return { success: false, reason: 'home_info_sections_missing' };
-      if (!document.querySelector('a[href="mailto:tukiharu1125+portfolio@gmail.com"]')) return { success: false, reason: 'home_contact_missing' };
+      if (!document.querySelector('a[href="mailto:tukiharu3325+portfolio@gmail.com"]')) return { success: false, reason: 'home_contact_missing' };
       const routes = ['/works', '/photos', '/blog', '/about'];
       if (document.title !== '月春の資材置き場') return { success: false, reason: 'title_not_updated' };
       const blogLink = document.querySelector('header a[href="/blog"]');
