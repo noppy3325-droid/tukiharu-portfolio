@@ -11,4 +11,12 @@ describe("コメント削除UI", () => {
     expect(source).toContain("コメントを削除しますか？");
     expect(source).toContain("removeOwnComment.mutate({ id: comment.id })");
   });
+
+  it("投稿後5分だけ編集でき、削除直後は取り消せる", () => {
+    expect(source).toContain("COMMENT_EDIT_WINDOW_MS = 5 * 60 * 1000");
+    expect(source).toContain("isCommentEditable(comment.createdAt)");
+    expect(source).toContain("updateOwnComment.mutate({ id: editingComment.id, body: editingComment.body })");
+    expect(source).toContain("restoreOwnComment.mutate({ id: undoComment.id })");
+    expect(source).toContain("あと{undoSeconds}秒だけ取り消せます。");
+  });
 });

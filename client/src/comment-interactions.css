@@ -1,0 +1,12 @@
+.simple-comment-actions { display: flex; align-items: center; gap: 0.25rem; margin-left: auto; }
+.simple-comment-list article header .simple-comment-actions button { margin-left: 0; padding: 0.25rem; color: #638491; border: 0; border-radius: 0.3rem; background: transparent; cursor: pointer; }
+.simple-comment-list article header .simple-comment-actions button:hover, .simple-comment-list article header .simple-comment-actions button:focus-visible { color: #9a6370; background: #f8edf1; }
+.simple-comment-edit-form { display: grid; gap: 0.55rem; margin-top: 0.65rem; }
+.simple-comment-edit-form textarea { min-height: 88px; }
+.simple-comment-edit-form > div { display: flex; justify-content: flex-end; gap: 0.5rem; }
+.simple-comment-edit-form button { border-radius: 999px; }
+.simple-comment-undo { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; padding: 0.8rem 0.9rem; border: 1px solid #c8dee6; background: #f4fbfd; color: #4d7484; font-size: 0.74rem; line-height: 1.6; }
+.simple-comment-undo > div { display: flex; align-items: center; gap: 0.55rem; flex-shrink: 0; }
+.simple-comment-undo button { display: inline-flex; align-items: center; gap: 0.3rem; border-radius: 999px; }
+.simple-comment-undo > div > button:last-child { color: #638491; border: 0; background: transparent; font-size: 0.7rem; cursor: pointer; }
+@media (max-width: 720px) { .simple-comment-undo { align-items: flex-start; flex-direction: column; gap: 0.55rem; } }

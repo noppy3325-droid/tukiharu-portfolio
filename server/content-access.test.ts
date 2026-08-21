@@ -6,12 +6,14 @@ const dbMock = vi.hoisted(() => ({
   listWorks: vi.fn(), listBooks: vi.fn(), listGalleryItems: vi.fn(), createWork: vi.fn(), createBook: vi.fn(), createGalleryItem: vi.fn(),
   getSiteSettings: vi.fn(), setSiteIntroduction: vi.fn(),
   listPublishedPosts: vi.fn(), getAdjacentPublishedPosts: vi.fn(), getLikeCount: vi.fn(), addLike: vi.fn(), removeLike: vi.fn(),
-  getPublishedPostById: vi.fn(), addComment: vi.fn(), listComments: vi.fn(), deleteCommentByAuthor: vi.fn(),
+  getPublishedPostById: vi.fn(), addComment: vi.fn(), listComments: vi.fn(), deleteCommentByAuthor: vi.fn(), restoreCommentByAuthor: vi.fn(), updateCommentByAuthorWithinWindow: vi.fn(),
 }));
 const storageMock = vi.hoisted(() => ({ storagePut: vi.fn() }));
+const notificationMock = vi.hoisted(() => ({ notifyOwner: vi.fn() }));
 
 vi.mock("./db", () => dbMock);
 vi.mock("./storage", () => storageMock);
+vi.mock("./_core/notification", () => notificationMock);
 import { appRouter } from "./routers";
 
 function context(role: "admin" | "user" | null, isAdmin = false, email = "test@example.com"): TrpcContext {
@@ -111,9 +113,17 @@ describe("コンテンツと権限のAPI", () => {
     await expect(appRouter.createCaller(context(null)).blog.addComment({ id: 4, body: "すてきな記事でした" })).rejects.toMatchObject({ code: "UNAUTHORIZED" } satisfies Partial<TRPCError>);
   });
 
+  it("コメント投稿時に管理者通知を送る", async () => {
+    dbMock.getPublishedPostById.mockResolvedValue({ id: 4, title: "通知対象の記事" });
+    dbMock.addComment.mockResolvedValue({ success: true });
+    notificationMock.notifyOwner.mockResolvedValue(true);
+    await expect(appRouter.createCaller(context("user")).blog.addComment({ id: 4, body: "新しいコメントです" })).resolves.toEqual({ success: true });
+    expect(notificationMock.notifyOwner).toHaveBeenCalledWith(expect.objectContaining({ title: "新しいBlogコメント", content: expect.stringContaining("通知対象の記事") }));
+  });
+
   it("コメントは投稿者本人だけが削除できる", async () => {
     dbMock.deleteCommentByAuthor.mockResolvedValue(true);
-    await expect(appRouter.createCaller(context("user")).blog.removeComment({ id: 11 })).resolves.toEqual({ success: true });
+    await expect(appRouter.createCaller(context("user")).blog.removeComment({ id: 11 })).resolves.toMatchObject({ success: true, id: 11, undoExpiresAt: expect.any(Date) });
     expect(dbMock.deleteCommentByAuthor).toHaveBeenCalledWith(11, 7);
   });
 
@@ -121,5 +131,23 @@ describe("コンテンツと権限のAPI", () => {
     dbMock.deleteCommentByAuthor.mockResolvedValue(false);
     await expect(appRouter.createCaller(context("user")).blog.removeComment({ id: 12 })).rejects.toMatchObject({ code: "FORBIDDEN" } satisfies Partial<TRPCError>);
     await expect(appRouter.createCaller(context(null)).blog.removeComment({ id: 12 })).rejects.toMatchObject({ code: "UNAUTHORIZED" } satisfies Partial<TRPCError>);
+  });
+
+  it("コメントは投稿後5分以内なら投稿者本人が編集でき、短時間だけ削除を取り消せる", async () => {
+    dbMock.updateCommentByAuthorWithinWindow.mockResolvedValue(true);
+    dbMock.restoreCommentByAuthor.mockResolvedValue(true);
+    const caller = appRouter.createCaller(context("user"));
+    await expect(caller.blog.updateComment({ id: 13, body: "編集後のコメント" })).resolves.toEqual({ success: true });
+    expect(dbMock.updateCommentByAuthorWithinWindow).toHaveBeenCalledWith(13, 7, "編集後のコメント", expect.any(Date));
+    await expect(caller.blog.restoreComment({ id: 13 })).resolves.toEqual({ success: true });
+    expect(dbMock.restoreCommentByAuthor).toHaveBeenCalledWith(13, 7, expect.any(Date));
+  });
+
+  it("編集期限切れまたは他者のコメント復元を拒否する", async () => {
+    dbMock.updateCommentByAuthorWithinWindow.mockResolvedValue(false);
+    dbMock.restoreCommentByAuthor.mockResolvedValue(false);
+    const caller = appRouter.createCaller(context("user"));
+    await expect(caller.blog.updateComment({ id: 14, body: "期限切れ" })).rejects.toMatchObject({ code: "FORBIDDEN" } satisfies Partial<TRPCError>);
+    await expect(caller.blog.restoreComment({ id: 14 })).rejects.toMatchObject({ code: "FORBIDDEN" } satisfies Partial<TRPCError>);
   });
 });
