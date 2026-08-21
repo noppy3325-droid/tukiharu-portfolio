@@ -1,5 +1,5 @@
-export type HomeUpdateSource = { label: string; title: string; updatedAt: Date | string };
+export type HomeUpdateSource = { updatedAt: Date | string };
 
-export function buildHomeUpdates(sources: HomeUpdateSource[]) {
+export function buildHomeUpdates<T extends HomeUpdateSource>(sources: T[]) {
   return [...sources].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 }

@@ -1,6 +1,7 @@
 import { AdminBatchImageUpload } from "@/components/AdminBatchImageUpload";
 import { AdminImageUpload } from "@/components/AdminImageUpload";
 import RichTextEditor from "@/components/RichTextEditor";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -38,7 +39,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function RemoveButton({ onClick }: { onClick: () => void }) {
-  return <button className="admin-delete" type="button" onClick={onClick} aria-label="削除"><Trash2 size={15} /></button>;
+  return <AlertDialog><AlertDialogTrigger asChild><button className="admin-delete" type="button" aria-label="削除"><Trash2 size={15} /></button></AlertDialogTrigger><AlertDialogContent className="admin-delete-dialog"><AlertDialogHeader><AlertDialogTitle>このコンテンツを削除しますか？</AlertDialogTitle><AlertDialogDescription>削除すると元に戻せません。公開ページからも非表示になります。</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>キャンセル</AlertDialogCancel><AlertDialogAction onClick={onClick} className="bg-[#a75a6a] hover:bg-[#8f4e5c]">削除する</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>;
 }
 
 export default function Admin() {
