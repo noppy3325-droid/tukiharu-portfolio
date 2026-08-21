@@ -6,7 +6,7 @@ const dbMock = vi.hoisted(() => ({
   listWorks: vi.fn(), listBooks: vi.fn(), listGalleryItems: vi.fn(), createWork: vi.fn(), createBook: vi.fn(), createGalleryItem: vi.fn(),
   getSiteSettings: vi.fn(), setSiteIntroduction: vi.fn(),
   listPublishedPosts: vi.fn(), getAdjacentPublishedPosts: vi.fn(), getLikeCount: vi.fn(), addLike: vi.fn(), removeLike: vi.fn(),
-  getPublishedPostById: vi.fn(), addComment: vi.fn(), listComments: vi.fn(),
+  getPublishedPostById: vi.fn(), addComment: vi.fn(), listComments: vi.fn(), deleteCommentByAuthor: vi.fn(),
 }));
 const storageMock = vi.hoisted(() => ({ storagePut: vi.fn() }));
 
@@ -109,5 +109,17 @@ describe("コンテンツと権限のAPI", () => {
 
   it("コメント投稿は認証済みの訪問者だけに限定される", async () => {
     await expect(appRouter.createCaller(context(null)).blog.addComment({ id: 4, body: "すてきな記事でした" })).rejects.toMatchObject({ code: "UNAUTHORIZED" } satisfies Partial<TRPCError>);
+  });
+
+  it("コメントは投稿者本人だけが削除できる", async () => {
+    dbMock.deleteCommentByAuthor.mockResolvedValue(true);
+    await expect(appRouter.createCaller(context("user")).blog.removeComment({ id: 11 })).resolves.toEqual({ success: true });
+    expect(dbMock.deleteCommentByAuthor).toHaveBeenCalledWith(11, 7);
+  });
+
+  it("他者のコメント削除と未ログインの削除を拒否する", async () => {
+    dbMock.deleteCommentByAuthor.mockResolvedValue(false);
+    await expect(appRouter.createCaller(context("user")).blog.removeComment({ id: 12 })).rejects.toMatchObject({ code: "FORBIDDEN" } satisfies Partial<TRPCError>);
+    await expect(appRouter.createCaller(context(null)).blog.removeComment({ id: 12 })).rejects.toMatchObject({ code: "UNAUTHORIZED" } satisfies Partial<TRPCError>);
   });
 });

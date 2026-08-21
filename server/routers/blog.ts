@@ -34,6 +34,11 @@ export const blogRouter = router({
     if (!post) throw new TRPCError({ code: "NOT_FOUND", message: "公開中の記事が見つかりません。" });
     return db.addComment(input.id, ctx.user.id, input.body.trim());
   }),
+  removeComment: protectedProcedure.input(idInput).mutation(async ({ input, ctx }) => {
+    const deleted = await db.deleteCommentByAuthor(input.id, ctx.user.id);
+    if (!deleted) throw new TRPCError({ code: "FORBIDDEN", message: "自分が投稿したコメントだけを削除できます。" });
+    return { success: true };
+  }),
 });
 
 export const adminBlogRouter = router({
