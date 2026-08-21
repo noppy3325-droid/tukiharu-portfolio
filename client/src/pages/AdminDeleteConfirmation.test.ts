@@ -8,8 +8,9 @@ describe("管理画面の削除確認", () => {
   it("削除操作を確認ダイアログで保護する", () => {
     expect(adminSource).toContain("function RemoveButton");
     expect(adminSource).toContain("<AlertDialog>");
-    expect(adminSource).toContain("このコンテンツを削除しますか？");
     expect(adminSource).toContain("削除すると元に戻せません。");
     expect(adminSource).toContain("<AlertDialogAction onClick={onClick}");
+    expect(adminSource).toContain("「{title}」を削除しますか？");
+    expect(adminSource).toContain("<RemoveButton title={item.title}");
   });
 });
