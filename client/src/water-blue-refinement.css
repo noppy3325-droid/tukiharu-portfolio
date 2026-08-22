@@ -1,0 +1,56 @@
+:root {
+  --tsuki-ink: #294a5a;
+  --tsuki-deep: #1f4354;
+  --tsuki-muted: #587582;
+  --tsuki-lilac: #92c6de;
+  --tsuki-pink: #e7a2bb;
+  --tsuki-blue: #9bd7eb;
+  --tsuki-glass: rgba(244, 252, 255, 0.42);
+  --tsuki-border: rgba(255, 255, 255, 0.76);
+  --tsuki-shadow: 0 18px 46px rgba(44, 112, 140, 0.14);
+  --gallery-ink: #294a5a;
+  --gallery-muted: #708b96;
+  --gallery-line: #d5e7ed;
+  --gallery-paper: #fcfeff;
+  --gallery-pink: #edf8fc;
+  --gallery-purple: #eaf4fb;
+  --gallery-warm: #f7fcfe;
+}
+
+body { background: #eaf7fb !important; }
+body:before { background: radial-gradient(ellipse at 10% 15%, rgba(225, 244, 251, 0.78), transparent 32%), radial-gradient(ellipse at 85% 74%, rgba(191, 226, 241, 0.66), transparent 34%), linear-gradient(155deg, #eaf7fb 0%, #f3fbfd 58%, #e3f4f9 100%) !important; }
+body:after { opacity: 0.62; }
+
+.tsuki-brand > span, .tsuki-header nav a, .tsuki-owner-link, .tsuki-eyebrow, .tsuki-subhero > p, .tsuki-hub-card > span, .tsuki-quiet-note span, .tsuki-work-card > span, .tsuki-book-list article > span, .tsuki-book-list small, .tsuki-photo-list small { color: #4c8ba7; }
+.tsuki-header nav a:hover, .tsuki-owner-link:hover, .tsuki-hero h1 em, .tsuki-subhero h1 em, .tsuki-page .simple-hero h1 em, .tsuki-page .simple-blog-hero h1 em { color: #c7779a !important; }
+.tsuki-primary, .tsuki-secondary, .simple-portfolio .simple-primary-link, .simple-portfolio .simple-comment-submit, .admin-desk button[class*="bg-"], .owner-gate button[class*="bg-"] { background: linear-gradient(120deg, #4b95b5, #c8789b) !important; }
+.tsuki-primary, .tsuki-secondary { box-shadow: 0 8px 20px rgba(52, 122, 151, 0.22); }
+.tsuki-moon { background: radial-gradient(circle at 35% 30%, #fffdf2 0 12%, #f7dce6 44%, #a9dced 100%); }
+.tsuki-code-bar > span { background: #e49bb7; }
+.tsuki-code-bar > span:nth-child(2) { background: #9ed4e8; }
+.tsuki-code-bar > span:nth-child(3) { background: #8bbfb7; }
+.tsuki-code-widget code i, .tsuki-shortcut svg, .tsuki-page .simple-blog-empty svg { color: #5a9dbb; }
+.tsuki-code-widget code em, .tsuki-code-cursor { color: #c7779a; background-color: #c7779a; }
+
+.gallery-header nav a:hover, .gallery-update-link:hover strong, .gallery-update-link:focus-visible strong { color: #c7779a; }
+.gallery-intro p, .gallery-page-heading > p { color: #5b9db8; }
+.gallery-home-info { background: linear-gradient(128deg, #eaf7fb 0%, #edf9fc 72%, #f8edf3 100%); }
+.gallery-updates { background: #e8f4fa; }
+.gallery-section-label { color: #c7779a; }
+.gallery-contact { border-color: rgba(98, 157, 184, 0.34); }
+.gallery-contact span, .gallery-update-list span { color: #6a9fb4; }
+.gallery-contact a { color: #31576a; border-color: #9fc9da; }
+.gallery-update-list { border-color: rgba(103, 151, 174, 0.32); }
+.gallery-update-list li { border-color: rgba(103, 151, 174, 0.32); }
+.gallery-update-list strong { color: #294a5a; }
+.gallery-update-link:focus-visible { outline-color: #7eb8d0; }
+.gallery-thumb-work { background: linear-gradient(135deg, #e5f5fa, #f6eff5); }
+.gallery-thumb-book { background: linear-gradient(135deg, #e6f3fb, #edf8fa); }
+.gallery-thumb-note { background: linear-gradient(135deg, #edf8fc, #e8f1fb); }
+.admin-tabs { background: rgba(232, 246, 251, 0.78) !important; border-color: #c5e1eb !important; }
+.admin-tabs button[data-state="active"] { background: #dff1f7 !important; color: #2f6680 !important; }
+
+@supports (content-visibility: auto) {
+  .gallery-home-info, .gallery-updates, .simple-blog-row, .simple-work-card, .simple-library-list article, .tsuki-work-card, .tsuki-photo-list article, .tsuki-book-list article { content-visibility: auto; contain-intrinsic-size: auto 260px; }
+}
+.gallery-update-list li, .simple-blog-row, .simple-work-card, .tsuki-work-card, .tsuki-photo-list article { contain: layout paint style; }
