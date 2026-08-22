@@ -34,7 +34,7 @@ body:after { opacity: 0.62; }
 
 .gallery-header nav a:hover, .gallery-update-link:hover strong, .gallery-update-link:focus-visible strong { color: #c7779a; }
 .gallery-intro p, .gallery-page-heading > p { color: #5b9db8; }
-.gallery-home-info { background: linear-gradient(128deg, #eaf7fb 0%, #edf9fc 72%, #f8edf3 100%); }
+.gallery-home-info { background: #f6eef3; }
 .gallery-updates { background: #e8f4fa; }
 .gallery-section-label { color: #c7779a; }
 .gallery-contact { border-color: rgba(98, 157, 184, 0.34); }
