@@ -1,5 +1,6 @@
 .simple-comment-actions { display: flex; align-items: center; gap: 0.25rem; margin-left: auto; }
 .simple-comment-list article header .simple-comment-actions button { margin-left: 0; padding: 0.25rem; color: #638491; border: 0; border-radius: 0.3rem; background: transparent; cursor: pointer; }
+.simple-comment-edited { padding: 0.13rem 0.32rem; color: #6e7d9a; border: 1px solid #d8ddeb; border-radius: 999px; background: #f8f8fc; font: 0.55rem "DM Mono", monospace; letter-spacing: 0.08em; }
 .simple-comment-list article header .simple-comment-actions button:hover, .simple-comment-list article header .simple-comment-actions button:focus-visible { color: #9a6370; background: #f8edf1; }
 .simple-comment-edit-form { display: grid; gap: 0.55rem; margin-top: 0.65rem; }
 .simple-comment-edit-form textarea { min-height: 88px; }

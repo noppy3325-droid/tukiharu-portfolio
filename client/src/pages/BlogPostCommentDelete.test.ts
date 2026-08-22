@@ -19,4 +19,10 @@ describe("コメント削除UI", () => {
     expect(source).toContain("restoreOwnComment.mutate({ id: undoComment.id })");
     expect(source).toContain("あと{undoSeconds}秒だけ取り消せます。");
   });
+
+  it("編集済み日時を持つコメントにラベルを表示する", () => {
+    expect(source).toContain("comment.editedAt &&");
+    expect(source).toContain("simple-comment-edited");
+    expect(source).toContain("編集済み");
+  });
 });

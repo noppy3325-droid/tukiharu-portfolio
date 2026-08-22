@@ -1,0 +1,1 @@
+ALTER TABLE `blogComments` ADD `editedAt` timestamp;

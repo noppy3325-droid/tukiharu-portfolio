@@ -101,6 +101,7 @@ export const blogComments = mysqlTable("blogComments", {
   postId: int("postId").notNull(),
   authorId: int("authorId").notNull(),
   body: text("body").notNull(),
+  editedAt: timestamp("editedAt"),
   deletedAt: timestamp("deletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
