@@ -21,6 +21,8 @@ body { background: #eaf7fb !important; }
 body:before { background: radial-gradient(ellipse at 10% 15%, rgba(225, 244, 251, 0.78), transparent 32%), radial-gradient(ellipse at 85% 74%, rgba(191, 226, 241, 0.66), transparent 34%), linear-gradient(155deg, #eaf7fb 0%, #f3fbfd 58%, #e3f4f9 100%) !important; }
 body:after { opacity: 0.62; }
 
+.tsuki-page.gallery-shell { overflow: visible; }
+
 .tsuki-brand > span, .tsuki-header nav a, .tsuki-owner-link, .tsuki-eyebrow, .tsuki-subhero > p, .tsuki-hub-card > span, .tsuki-quiet-note span, .tsuki-work-card > span, .tsuki-book-list article > span, .tsuki-book-list small, .tsuki-photo-list small { color: #4c8ba7; }
 .tsuki-header nav a:hover, .tsuki-owner-link:hover, .tsuki-hero h1 em, .tsuki-subhero h1 em, .tsuki-page .simple-hero h1 em, .tsuki-page .simple-blog-hero h1 em { color: #c7779a !important; }
 .tsuki-primary, .tsuki-secondary, .simple-portfolio .simple-primary-link, .simple-portfolio .simple-comment-submit, .admin-desk button[class*="bg-"], .owner-gate button[class*="bg-"] { background: linear-gradient(120deg, #4b95b5, #c8789b) !important; }
@@ -51,6 +53,17 @@ body:after { opacity: 0.62; }
 .admin-tabs button[data-state="active"] { background: #dff1f7 !important; color: #2f6680 !important; }
 
 @supports (content-visibility: auto) {
-  .gallery-home-info, .gallery-updates, .simple-blog-row, .simple-work-card, .simple-library-list article, .tsuki-work-card, .tsuki-photo-list article, .tsuki-book-list article { content-visibility: auto; contain-intrinsic-size: auto 260px; }
+  .gallery-updates, .simple-blog-row, .simple-work-card, .simple-library-list article, .tsuki-work-card, .tsuki-photo-list article, .tsuki-book-list article { content-visibility: auto; contain-intrinsic-size: auto 260px; }
 }
 .gallery-update-list li, .simple-blog-row, .simple-work-card, .tsuki-work-card, .tsuki-photo-list article { contain: layout paint style; }
+
+@media (min-width: 761px) {
+  .gallery-home-info {
+    width: 100vw !important;
+    max-width: none !important;
+    margin-left: calc(50% - 50vw) !important;
+    margin-right: calc(50% - 50vw) !important;
+    padding-left: max(28px, calc((100vw - 1124px) / 2)) !important;
+    padding-right: max(28px, calc((100vw - 1124px) / 2)) !important;
+  }
+}
