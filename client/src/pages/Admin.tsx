@@ -1,4 +1,4 @@
-import { AdminBatchImageUpload } from "@/components/AdminBatchImageUpload";
+import { AdminBatchImageUpload, type BatchGalleryMetadata, type BatchRegistrationResult } from "@/components/AdminBatchImageUpload";
 import { AdminImageUpload } from "@/components/AdminImageUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -91,13 +91,22 @@ function AdminDesk() {
 
   const selectSection = (value: SectionValue) => { setActiveSection(value); setMenuOpen(false); };
   const submitPost = (event: FormEvent) => { event.preventDefault(); const payload = { ...post, slug: makeSlug(post.slug || post.title) }; post.id ? updatePost.mutate({ id: post.id, ...payload }) : createPost.mutate(payload); };
-  const registerBatchPhotos = async (images: Array<{ title: string; url: string }>) => {
+  const registerBatchPhotos = async (images: Array<{ filename: string; url: string }>, metadata: BatchGalleryMetadata): Promise<BatchRegistrationResult> => {
+    let registered = 0;
+    const failures: string[] = [];
     for (let index = 0; index < images.length; index += 1) {
       const image = images[index];
-      await createPhoto.mutateAsync({ title: image.title, caption: "画像をアップロードしました。", imageUrl: image.url, camera: "", lens: "", location: "", takenAt: null, rotation: 0, sortOrder: (gallery.data?.length ?? 0) + index });
+      const details = metadata.detailsMode === "details" ? { camera: metadata.camera.trim(), lens: metadata.lens.trim(), location: metadata.location.trim(), takenAt: metadata.takenAt ? new Date(metadata.takenAt) : null } : { camera: "", lens: "", location: "", takenAt: null };
+      try {
+        await createPhoto.mutateAsync({ title: metadata.title, caption: metadata.caption, imageUrl: image.url, ...details, rotation: metadata.rotation, sortOrder: (gallery.data?.length ?? 0) + index });
+        registered += 1;
+      } catch (error) {
+        failures.push(`${imageTitleFromFilename(image.filename)}：${error instanceof Error ? error.message : "Galleryへ登録できませんでした。"}`);
+      }
     }
     await utils.admin.content.gallery.list.invalidate();
     await utils.content.gallery.list.invalidate();
+    return { registered, failures };
   };
 
   return <div className="admin-desk"><header className="admin-header"><div><p className="eyebrow"><FilePenLine size={15} /> OWNER'S DESK</p><h1>部屋を、少しずつ整える。</h1><p>自己紹介と、公開するBlog・Works・Books・Galleryをここから編集できます。</p></div><a href="/" className="back-link">公開中の部屋を見る ↗</a></header><Tabs value={activeSection} onValueChange={value => selectSection(value as SectionValue)}><div className="admin-section-bar"><div><p>CONTENT SECTIONS</p><strong>{sections.find(section => section.value === activeSection)?.label}</strong></div><TabsList className="admin-tabs">{sections.map(section => { const Icon = section.icon; return <TabsTrigger value={section.value} key={section.value}><Icon size={16} /><span><b>{section.label}</b><small>{section.detail}</small></span></TabsTrigger>; })}</TabsList><Sheet open={menuOpen} onOpenChange={setMenuOpen}><SheetTrigger asChild><Button type="button" variant="outline" className="admin-mobile-menu"><Menu size={18} />コンテンツを選ぶ</Button></SheetTrigger><SheetContent side="right" className="admin-section-sheet"><SheetHeader><SheetTitle>編集する項目</SheetTitle><SheetDescription>編集したいコンテンツを選択してください。</SheetDescription></SheetHeader><div className="admin-section-list">{sections.map(section => { const Icon = section.icon; return <button type="button" key={section.value} data-active={activeSection === section.value} onClick={() => selectSection(section.value)}><Icon size={18} /><span><b>{section.label}</b><small>{section.detail}</small></span></button>; })}</div></SheetContent></Sheet></div>
