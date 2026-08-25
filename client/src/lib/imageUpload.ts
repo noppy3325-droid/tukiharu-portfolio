@@ -1,8 +1,10 @@
 export const acceptedImageMimeTypes = ["image/jpeg", "image/png", "image/webp"] as const;
 export type AcceptedImageMimeType = (typeof acceptedImageMimeTypes)[number];
 export const maxImageUploadBytes = 5 * 1024 * 1024;
+export const preferredImageUploadBytes = 3 * 1024 * 1024;
+export const minPreferredImageUploadBytes = 512 * 1024;
 export const maxImageSourceBytes = 20 * 1024 * 1024;
-export const maxImageDimension = 1920;
+export const maxImageDimension = 1600;
 export const maxBatchImageCount = 12;
 
 export type CompressedImage = {
@@ -31,6 +33,10 @@ export function imageFilenameForMimeType(filename: string, mimeType: AcceptedIma
 
 export function shouldKeepOriginalImage(sourceBytes: number, convertedBytes: number) {
   return sourceBytes <= maxImageUploadBytes && convertedBytes >= sourceBytes;
+}
+
+export function calculatePreferredImageUploadBytes(sourceBytes: number) {
+  return Math.min(preferredImageUploadBytes, Math.max(minPreferredImageUploadBytes, Math.floor(sourceBytes * 0.75)));
 }
 
 export function createUploadImageResult({
@@ -109,8 +115,14 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   });
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("画像を圧縮できませんでした。")), "image/webp", quality));
+function canvasToBlob(canvas: HTMLCanvasElement, mimeType: AcceptedImageMimeType, quality: number): Promise<Blob> {
+  return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("画像を圧縮できませんでした。")), mimeType, quality));
+}
+
+async function canvasToOptimizedBlob(canvas: HTMLCanvasElement, sourceMimeType: AcceptedImageMimeType, quality: number): Promise<Blob> {
+  const webp = await canvasToBlob(canvas, "image/webp", quality);
+  if (webp.type === "image/webp" || sourceMimeType !== "image/jpeg") return webp;
+  return canvasToBlob(canvas, "image/jpeg", quality);
 }
 
 export async function compressImageForUpload(source: File): Promise<CompressedImage> {
@@ -124,9 +136,11 @@ export async function compressImageForUpload(source: File): Promise<CompressedIm
   context.drawImage(image, 0, 0, target.width, target.height);
 
   let output: Blob | null = null;
-  for (const quality of [0.82, 0.72, 0.62, 0.55]) {
-    output = await canvasToBlob(canvas, quality);
-    if (output.size <= maxImageUploadBytes) break;
+  const targetBytes = calculatePreferredImageUploadBytes(source.size);
+  for (const quality of [0.78, 0.68, 0.58, 0.48]) {
+    const candidate = await canvasToOptimizedBlob(canvas, source.type as AcceptedImageMimeType, quality);
+    if (!output || candidate.size < output.size) output = candidate;
+    if (output.size <= targetBytes) break;
   }
   if (!output || output.size > maxImageUploadBytes) throw new Error("変換後も5MBを超えています。より小さな画像を選択してください。");
 

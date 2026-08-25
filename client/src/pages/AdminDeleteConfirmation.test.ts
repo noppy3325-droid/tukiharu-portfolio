@@ -13,4 +13,12 @@ describe("管理画面の削除確認", () => {
     expect(adminSource).toContain("「{title}」を削除しますか？");
     expect(adminSource).toContain("<RemoveButton title={item.title}");
   });
+
+  it("Galleryの単体アップロード後に必須のタイトル・キャプションを補完し、保存結果を表示する", () => {
+    expect(adminSource).toContain("onUploadComplete={({ url, filename }) => setPhoto");
+    expect(adminSource).toContain("title: current.title.trim() || imageTitleFromFilename(filename)");
+    expect(adminSource).toContain("caption: current.caption.trim() || \"画像をアップロードしました。\"");
+    expect(adminSource).toContain("Galleryへ保存しました。公開ページへ反映されます。");
+    expect(adminSource).toContain("createPhoto.error?.message || updatePhoto.error?.message");
+  });
 });

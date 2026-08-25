@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateImageDimensions, createUploadImageResult, formatImageBytes, imageFilenameForMimeType, imageTitleFromFilename, maxImageSourceBytes, shouldKeepOriginalImage, validateImageSelection } from "./imageUpload";
+import { calculateImageDimensions, calculatePreferredImageUploadBytes, createUploadImageResult, formatImageBytes, imageFilenameForMimeType, imageTitleFromFilename, maxImageSourceBytes, preferredImageUploadBytes, shouldKeepOriginalImage, validateImageSelection } from "./imageUpload";
 
 describe("管理画面の画像選択", () => {
   it("JPEG・PNG・WebPで元画像上限以内のファイルを受け入れる", () => {
@@ -11,8 +11,8 @@ describe("管理画面の画像選択", () => {
     expect(validateImageSelection({ type: "image/jpeg", size: maxImageSourceBytes + 1 })).toContain("20MB");
   });
 
-  it("長辺を1920px以内へ収め、容量を分かりやすく表示する", () => {
-    expect(calculateImageDimensions(4000, 3000)).toEqual({ width: 1920, height: 1440 });
+  it("長辺を1600px以内へ収め、容量を分かりやすく表示する", () => {
+    expect(calculateImageDimensions(4000, 3000)).toEqual({ width: 1600, height: 1200 });
     expect(calculateImageDimensions(1200, 800)).toEqual({ width: 1200, height: 800 });
     expect(formatImageBytes(820 * 1024)).toBe("820KB");
     expect(formatImageBytes(1.25 * 1024 * 1024)).toBe("1.3MB");
@@ -26,6 +26,13 @@ describe("管理画面の画像選択", () => {
     expect(shouldKeepOriginalImage(6 * 1024 * 1024, 4.2 * 1024 * 1024)).toBe(false);
   });
 
+  it("元サイズに応じて目標容量を3MB以下へ設定し、小さい画像では過剰な劣化を避ける", () => {
+    expect(calculatePreferredImageUploadBytes(4 * 1024 * 1024)).toBe(preferredImageUploadBytes);
+    expect(calculatePreferredImageUploadBytes(2 * 1024 * 1024)).toBe(1.5 * 1024 * 1024);
+    expect(calculatePreferredImageUploadBytes(20 * 1024 * 1024)).toBe(preferredImageUploadBytes);
+    expect(calculatePreferredImageUploadBytes(100 * 1024)).toBe(512 * 1024);
+  });
+
   it("SafariがWebP指定に対してPNGを返した場合、PNGのMIMEタイプと拡張子をサーバーへ渡せる", () => {
     const source = new File(["original-jpeg-data"], "camera.jpg", { type: "image/jpeg" });
     const result = createUploadImageResult({
@@ -33,14 +40,14 @@ describe("管理画面の画像選択", () => {
       output: new Blob(["png"], { type: "image/png" }),
       originalWidth: 4000,
       originalHeight: 3000,
-      targetWidth: 1920,
-      targetHeight: 1440,
+      targetWidth: 1600,
+      targetHeight: 1200,
     });
 
     expect(result.file.type).toBe("image/png");
     expect(result.file.name).toBe("camera.png");
     expect(result.keptOriginal).toBe(false);
-    expect(result.width).toBe(1920);
+    expect(result.width).toBe(1600);
   });
 
   it("形式情報が空、または変換結果が元より大きいSafariの出力では5MB以下のJPEG元画像を使う", () => {
