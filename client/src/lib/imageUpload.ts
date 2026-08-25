@@ -1,4 +1,5 @@
 export const acceptedImageMimeTypes = ["image/jpeg", "image/png", "image/webp"] as const;
+export type AcceptedImageMimeType = (typeof acceptedImageMimeTypes)[number];
 export const maxImageUploadBytes = 5 * 1024 * 1024;
 export const maxImageSourceBytes = 20 * 1024 * 1024;
 export const maxImageDimension = 1920;
@@ -10,10 +11,61 @@ export type CompressedImage = {
   compressedBytes: number;
   width: number;
   height: number;
+  keptOriginal: boolean;
 };
 
+const imageExtensions: Record<AcceptedImageMimeType, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+export function isAcceptedImageMimeType(mimeType: string): mimeType is AcceptedImageMimeType {
+  return (acceptedImageMimeTypes as readonly string[]).includes(mimeType);
+}
+
+export function imageFilenameForMimeType(filename: string, mimeType: AcceptedImageMimeType) {
+  const stem = filename.replace(/\.[^.]+$/, "").trim() || "gallery-image";
+  return `${stem}.${imageExtensions[mimeType]}`;
+}
+
+export function shouldKeepOriginalImage(sourceBytes: number, convertedBytes: number) {
+  return sourceBytes <= maxImageUploadBytes && convertedBytes >= sourceBytes;
+}
+
+export function createUploadImageResult({
+  source,
+  output,
+  originalWidth,
+  originalHeight,
+  targetWidth,
+  targetHeight,
+}: {
+  source: File;
+  output: Blob;
+  originalWidth: number;
+  originalHeight: number;
+  targetWidth: number;
+  targetHeight: number;
+}): CompressedImage {
+  const outputMimeType = isAcceptedImageMimeType(output.type) ? output.type : null;
+  if (!outputMimeType) {
+    if (source.size <= maxImageUploadBytes) {
+      return { file: source, originalBytes: source.size, compressedBytes: source.size, width: originalWidth, height: originalHeight, keptOriginal: true };
+    }
+    throw new Error("このブラウザでは画像形式を安全に変換できません。JPEGまたはPNGを5MB以下にして選択してください。");
+  }
+
+  if (shouldKeepOriginalImage(source.size, output.size)) {
+    return { file: source, originalBytes: source.size, compressedBytes: source.size, width: originalWidth, height: originalHeight, keptOriginal: true };
+  }
+
+  const file = new File([output], imageFilenameForMimeType(source.name, outputMimeType), { type: outputMimeType, lastModified: Date.now() });
+  return { file, originalBytes: source.size, compressedBytes: output.size, width: targetWidth, height: targetHeight, keptOriginal: false };
+}
+
 export function validateImageSelection(file: Pick<File, "type" | "size">): string | null {
-  if (!(acceptedImageMimeTypes as readonly string[]).includes(file.type)) return "JPEG・PNG・WebP形式の画像を選択してください。";
+  if (!isAcceptedImageMimeType(file.type)) return "JPEG・PNG・WebP形式の画像を選択してください。";
   if (file.size > maxImageSourceBytes) return "元画像は20MB以下にしてください。";
   return null;
 }
@@ -76,8 +128,14 @@ export async function compressImageForUpload(source: File): Promise<CompressedIm
     output = await canvasToBlob(canvas, quality);
     if (output.size <= maxImageUploadBytes) break;
   }
-  if (!output || output.size > maxImageUploadBytes) throw new Error("圧縮後も5MBを超えています。より小さな画像を選択してください。");
+  if (!output || output.size > maxImageUploadBytes) throw new Error("変換後も5MBを超えています。より小さな画像を選択してください。");
 
-  const filename = `${source.name.replace(/\.[^.]+$/, "") || "gallery-image"}.webp`;
-  return { file: new File([output], filename, { type: "image/webp", lastModified: Date.now() }), originalBytes: source.size, compressedBytes: output.size, width: target.width, height: target.height };
+  return createUploadImageResult({
+    source,
+    output,
+    originalWidth: image.naturalWidth,
+    originalHeight: image.naturalHeight,
+    targetWidth: target.width,
+    targetHeight: target.height,
+  });
 }

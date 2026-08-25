@@ -7,6 +7,15 @@ describe("画像アップロードの検証", () => {
     expect(decodeAndValidateImage(base64, "image/png")).toEqual(Buffer.from(base64, "base64"));
   });
 
+  it("Safariの変換結果またはJPEG元画像を、宣言された実形式の署名で受理する", () => {
+    const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0x00]).toString("base64");
+    const webp = Buffer.from("RIFF\x00\x00\x00\x00WEBPVP8 ", "binary").toString("base64");
+
+    expect(decodeAndValidateImage(jpeg, "image/jpeg")).toEqual(Buffer.from(jpeg, "base64"));
+    expect(decodeAndValidateImage(webp, "image/webp")).toEqual(Buffer.from(webp, "base64"));
+    expect(() => decodeAndValidateImage(jpeg, "image/webp")).toThrow("一致しません");
+  });
+
   it("不正なデータ、形式偽装、上限超過を拒否する", () => {
     expect(() => decodeAndValidateImage("invalid-base64!", "image/png")).toThrow("画像データの形式");
     expect(() => decodeAndValidateImage(Buffer.from("not-image").toString("base64"), "image/png")).toThrow("一致しません");
