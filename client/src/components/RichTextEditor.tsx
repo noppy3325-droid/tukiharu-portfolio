@@ -1,4 +1,4 @@
-import { acceptedImageMimeTypes, compressImageForUpload, formatImageBytes, readFileAsBase64, validateImageSelection } from "@/lib/imageUpload";
+import { acceptedImageMimeTypes, compressImageForUpload, formatImageBytes, imageOptimizationModeLabels, readFileAsBase64, type ImageOptimizationMode, validateImageSelection } from "@/lib/imageUpload";
 import { buildInlineBlogImageHtml } from "@/lib/richTextImage";
 import { trpc } from "@/lib/trpc";
 import { Bold, ImagePlus, Italic, List, ListOrdered, LoaderCircle, Pilcrow } from "lucide-react";
@@ -14,6 +14,7 @@ export default function RichTextEditor({ value, onChange, label = "本文" }: Ri
   const inputId = useId();
   const [imageStatus, setImageStatus] = useState<string | null>(null);
   const [imageAltText, setImageAltText] = useState("");
+  const [optimizationMode, setOptimizationMode] = useState<ImageOptimizationMode>("balanced");
   const upload = trpc.admin.content.upload.image.useMutation({
     onSuccess: result => {
       restoreSelection();
@@ -56,7 +57,7 @@ export default function RichTextEditor({ value, onChange, label = "本文" }: Ri
     if (validationError) return setImageStatus(validationError);
     setImageStatus("画像を圧縮しています…");
     try {
-      const compressed = await compressImageForUpload(file);
+      const compressed = await compressImageForUpload(file, optimizationMode);
       setImageStatus(`圧縮後 ${formatImageBytes(compressed.compressedBytes)}。S3へアップロードしています…`);
       const base64 = await readFileAsBase64(compressed.file);
       pendingImageAltRef.current = imageAltText;
@@ -78,6 +79,7 @@ export default function RichTextEditor({ value, onChange, label = "本文" }: Ri
         <span>画像の説明</span>
         <input id={`${inputId}-alt`} value={imageAltText} onChange={event => setImageAltText(event.target.value)} placeholder="例：窓辺に置いたフィルムカメラ" maxLength={240} />
       </label>
+      <label className="editor-image-alt" htmlFor={`${inputId}-optimization`}><span>最適化</span><select id={`${inputId}-optimization`} value={optimizationMode} onChange={event => setOptimizationMode(event.target.value as ImageOptimizationMode)} disabled={upload.isPending}>{Object.entries(imageOptimizationModeLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
       <input ref={fileInputRef} id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => void uploadImage(event.target.files?.[0])} />
       <label className="editor-image-action" htmlFor={inputId} onMouseDown={rememberSelection} aria-label="画像を圧縮して本文へ挿入" title="画像を圧縮して本文へ挿入"><ImagePlus size={16} /><span>本文画像</span>{upload.isPending && <LoaderCircle className="animate-spin" size={13} />}</label>
     </div>

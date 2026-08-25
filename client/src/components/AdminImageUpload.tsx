@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { acceptedImageMimeTypes, compressImageForUpload, formatImageBytes, readFileAsBase64, type CompressedImage, validateImageSelection } from "@/lib/imageUpload";
+import { acceptedImageMimeTypes, compressImageForUpload, formatImageBytes, imageOptimizationModeLabels, readFileAsBase64, type CompressedImage, type ImageOptimizationMode, validateImageSelection } from "@/lib/imageUpload";
 import { trpc } from "@/lib/trpc";
 import { ImagePlus, LoaderCircle, Upload, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
@@ -18,6 +18,7 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const [selectionError, setSelectionError] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [optimizationMode, setOptimizationMode] = useState<ImageOptimizationMode>("balanced");
   const upload = trpc.admin.content.upload.image.useMutation({
     onSuccess: (result, variables) => {
       onChange(result.url);
@@ -47,7 +48,7 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
 
     setIsCompressing(true);
     try {
-      const compressedImage = await compressImageForUpload(file);
+      const compressedImage = await compressImageForUpload(file, optimizationMode);
       setSelectedImage(compressedImage);
       setLocalPreviewUrl(URL.createObjectURL(compressedImage.file));
     } catch (error) {
@@ -83,17 +84,18 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
   return <section className="admin-image-upload" aria-labelledby={`${inputId}-heading`}>
     <div className="admin-image-upload-copy">
       <div><p className="admin-panel-kicker">IMAGE UPLOAD</p><h3 id={`${inputId}-heading`}>画像を直接アップロード</h3></div>
-      <p>JPEG・PNG・WebPの元画像は20MBまで。長辺1600px・目標3MBへ最適化します。元画像より大きい変換結果は使わず、SafariなどでWebPにできないJPEGはJPEGへ安全に変換します。</p>
+      <p>JPEG・PNG・WebPの元画像は20MBまで。画像ごとに画質と容量の優先度を選べます。元画像より大きい変換結果は使わず、SafariなどでWebPにできないJPEGはJPEGへ安全に変換します。</p>
     </div>
     <div className="admin-image-upload-actions">
       <input ref={inputRef} id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => void selectFile(event.target.files?.[0])} />
       <label className="admin-image-select" htmlFor={inputId}><ImagePlus size={16} />ファイルを選ぶ</label>
+      <label className="admin-image-optimization" htmlFor={`${inputId}-optimization`}><span>最適化</span><select id={`${inputId}-optimization`} value={optimizationMode} onChange={event => setOptimizationMode(event.target.value as ImageOptimizationMode)} disabled={isCompressing || upload.isPending}>{Object.entries(imageOptimizationModeLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
       <span>{isCompressing ? "画像を圧縮中…" : selectedImage ? `${selectedImage.file.name}（${formatImageBytes(selectedImage.compressedBytes)}）` : "ファイル未選択"}</span>
       <Button type="button" className="rounded-xl bg-[#4f8eaa] hover:bg-[#3e7892]" disabled={!selectedImage || isCompressing || upload.isPending} onClick={uploadSelectedFile}>
         {upload.isPending ? <LoaderCircle className="animate-spin" size={16} /> : <Upload size={16} />} {upload.isPending ? "アップロード中…" : "S3へアップロード"}
       </Button>
     </div>
-    {previewUrl ? <div className="admin-image-preview"><img src={previewUrl} alt="選択した画像のプレビュー" /><div><strong>{localPreviewUrl?.startsWith("blob:") ? selectedImage?.keptOriginal ? "元画像を使用" : "最適化後のプレビュー" : "現在の画像"}</strong><span>{localPreviewUrl?.startsWith("blob:") && selectedImage ? selectedImage.keptOriginal ? <>元画像 {formatImageBytes(selectedImage.originalBytes)}をそのまま使用します（変換後の方が大きくなるため）</> : <>元画像 {formatImageBytes(selectedImage.originalBytes)} → 最適化後 {formatImageBytes(selectedImage.compressedBytes)}（{selectedImage.width} × {selectedImage.height}px）</> : "アップロード後、または画像URL入力後にここへ表示されます。"}</span>{localPreviewUrl?.startsWith("blob:") && <Button type="button" variant="ghost" onClick={clearSelectedFile}><X size={15} />選択を取り消す</Button>}</div></div> : <div className="admin-image-preview admin-image-preview-empty"><ImagePlus size={21} /><span>{isCompressing ? "画像の最適化プレビューを準備しています…" : "ファイルを選択すると、最適化後のプレビューがここに表示されます。"}</span></div>}
+    {previewUrl ? <div className="admin-image-preview"><img src={previewUrl} alt="選択した画像のプレビュー" /><div><strong>{localPreviewUrl?.startsWith("blob:") ? selectedImage?.keptOriginal ? "元画像を使用" : "最適化後のプレビュー" : "現在の画像"}</strong><span>{localPreviewUrl?.startsWith("blob:") && selectedImage ? selectedImage.keptOriginal ? <>元画像 {formatImageBytes(selectedImage.originalBytes)}をそのまま使用します（変換後の方が大きくなるため）</> : <>{imageOptimizationModeLabels[selectedImage.optimizationMode]}：元画像 {formatImageBytes(selectedImage.originalBytes)} → 最適化後 {formatImageBytes(selectedImage.compressedBytes)}（{selectedImage.width} × {selectedImage.height}px）</> : "アップロード後、または画像URL入力後にここへ表示されます。"}</span>{localPreviewUrl?.startsWith("blob:") && <Button type="button" variant="ghost" onClick={clearSelectedFile}><X size={15} />選択を取り消す</Button>}</div></div> : <div className="admin-image-preview admin-image-preview-empty"><ImagePlus size={21} /><span>{isCompressing ? "画像の最適化プレビューを準備しています…" : "ファイルを選択すると、最適化後のプレビューがここに表示されます。"}</span></div>}
     {selectionError && <p className="admin-login-error" role="alert">{selectionError}</p>}
     {upload.error && <p className="admin-login-error" role="alert">{upload.error.message || "画像をアップロードできませんでした。"}</p>}
     {upload.isSuccess && <p className="admin-save-success">S3へアップロードし、フォームへ画像URLを反映しました。続けて「写真を追加」または「変更を保存」を押してください。</p>}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateImageDimensions, calculatePreferredImageUploadBytes, createUploadImageResult, formatImageBytes, imageFilenameForMimeType, imageTitleFromFilename, maxImageSourceBytes, preferredImageUploadBytes, shouldKeepOriginalImage, validateImageSelection } from "./imageUpload";
+import { calculateImageDimensions, calculatePreferredImageUploadBytes, createUploadImageResult, formatImageBytes, getImageOptimizationSettings, imageFilenameForMimeType, imageTitleFromFilename, maxImageSourceBytes, preferredImageUploadBytes, shouldKeepOriginalImage, validateImageSelection } from "./imageUpload";
 
 describe("管理画面の画像選択", () => {
   it("JPEG・PNG・WebPで元画像上限以内のファイルを受け入れる", () => {
@@ -33,6 +33,13 @@ describe("管理画面の画像選択", () => {
     expect(calculatePreferredImageUploadBytes(100 * 1024)).toBe(512 * 1024);
   });
 
+  it("画像ごとに画質優先・バランス・容量優先の最適化プロファイルを選べる", () => {
+    const sourceBytes = 8 * 1024 * 1024;
+    expect(getImageOptimizationSettings("quality", sourceBytes)).toMatchObject({ maxDimension: 1920, targetBytes: 4 * 1024 * 1024 });
+    expect(getImageOptimizationSettings("balanced", sourceBytes)).toMatchObject({ maxDimension: 1600, targetBytes: preferredImageUploadBytes });
+    expect(getImageOptimizationSettings("size", sourceBytes)).toMatchObject({ maxDimension: 1200, targetBytes: 1536 * 1024 });
+  });
+
   it("SafariがWebP指定に対してPNGを返した場合、PNGのMIMEタイプと拡張子をサーバーへ渡せる", () => {
     const source = new File(["original-jpeg-data"], "camera.jpg", { type: "image/jpeg" });
     const result = createUploadImageResult({
@@ -42,12 +49,14 @@ describe("管理画面の画像選択", () => {
       originalHeight: 3000,
       targetWidth: 1600,
       targetHeight: 1200,
+      optimizationMode: "balanced",
     });
 
     expect(result.file.type).toBe("image/png");
     expect(result.file.name).toBe("camera.png");
     expect(result.keptOriginal).toBe(false);
     expect(result.width).toBe(1600);
+    expect(result.optimizationMode).toBe("balanced");
   });
 
   it("形式情報が空、または変換結果が元より大きいSafariの出力では5MB以下のJPEG元画像を使う", () => {
@@ -59,6 +68,7 @@ describe("管理画面の画像選択", () => {
       originalHeight: 2420,
       targetWidth: 1323,
       targetHeight: 1920,
+      optimizationMode: "quality",
     });
     const largerResult = createUploadImageResult({
       source,
@@ -67,11 +77,14 @@ describe("管理画面の画像選択", () => {
       originalHeight: 2420,
       targetWidth: 1323,
       targetHeight: 1920,
+      optimizationMode: "size",
     });
 
     expect(emptyTypeResult.file).toBe(source);
     expect(emptyTypeResult.keptOriginal).toBe(true);
+    expect(emptyTypeResult.optimizationMode).toBe("quality");
     expect(largerResult.file).toBe(source);
     expect(largerResult.compressedBytes).toBe(source.size);
+    expect(largerResult.optimizationMode).toBe("size");
   });
 });

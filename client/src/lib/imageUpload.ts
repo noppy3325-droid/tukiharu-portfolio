@@ -7,6 +7,14 @@ export const maxImageSourceBytes = 20 * 1024 * 1024;
 export const maxImageDimension = 1600;
 export const maxBatchImageCount = 12;
 
+export const imageOptimizationModes = ["quality", "balanced", "size"] as const;
+export type ImageOptimizationMode = (typeof imageOptimizationModes)[number];
+export const imageOptimizationModeLabels: Record<ImageOptimizationMode, string> = {
+  quality: "画質優先",
+  balanced: "バランス",
+  size: "容量優先",
+};
+
 export type CompressedImage = {
   file: File;
   originalBytes: number;
@@ -14,6 +22,7 @@ export type CompressedImage = {
   width: number;
   height: number;
   keptOriginal: boolean;
+  optimizationMode: ImageOptimizationMode;
 };
 
 const imageExtensions: Record<AcceptedImageMimeType, string> = {
@@ -39,6 +48,12 @@ export function calculatePreferredImageUploadBytes(sourceBytes: number) {
   return Math.min(preferredImageUploadBytes, Math.max(minPreferredImageUploadBytes, Math.floor(sourceBytes * 0.75)));
 }
 
+export function getImageOptimizationSettings(mode: ImageOptimizationMode, sourceBytes: number) {
+  if (mode === "quality") return { maxDimension: 1920, targetBytes: Math.min(4 * 1024 * 1024, Math.max(1024 * 1024, Math.floor(sourceBytes * 0.9))), qualities: [0.86, 0.8, 0.74, 0.68] };
+  if (mode === "size") return { maxDimension: 1200, targetBytes: Math.min(1536 * 1024, Math.max(320 * 1024, Math.floor(sourceBytes * 0.55))), qualities: [0.68, 0.58, 0.48, 0.38] };
+  return { maxDimension: maxImageDimension, targetBytes: calculatePreferredImageUploadBytes(sourceBytes), qualities: [0.78, 0.68, 0.58, 0.48] };
+}
+
 export function createUploadImageResult({
   source,
   output,
@@ -46,6 +61,7 @@ export function createUploadImageResult({
   originalHeight,
   targetWidth,
   targetHeight,
+  optimizationMode,
 }: {
   source: File;
   output: Blob;
@@ -53,21 +69,22 @@ export function createUploadImageResult({
   originalHeight: number;
   targetWidth: number;
   targetHeight: number;
+  optimizationMode: ImageOptimizationMode;
 }): CompressedImage {
   const outputMimeType = isAcceptedImageMimeType(output.type) ? output.type : null;
   if (!outputMimeType) {
     if (source.size <= maxImageUploadBytes) {
-      return { file: source, originalBytes: source.size, compressedBytes: source.size, width: originalWidth, height: originalHeight, keptOriginal: true };
+      return { file: source, originalBytes: source.size, compressedBytes: source.size, width: originalWidth, height: originalHeight, keptOriginal: true, optimizationMode };
     }
     throw new Error("このブラウザでは画像形式を安全に変換できません。JPEGまたはPNGを5MB以下にして選択してください。");
   }
 
   if (shouldKeepOriginalImage(source.size, output.size)) {
-    return { file: source, originalBytes: source.size, compressedBytes: source.size, width: originalWidth, height: originalHeight, keptOriginal: true };
+    return { file: source, originalBytes: source.size, compressedBytes: source.size, width: originalWidth, height: originalHeight, keptOriginal: true, optimizationMode };
   }
 
   const file = new File([output], imageFilenameForMimeType(source.name, outputMimeType), { type: outputMimeType, lastModified: Date.now() });
-  return { file, originalBytes: source.size, compressedBytes: output.size, width: targetWidth, height: targetHeight, keptOriginal: false };
+  return { file, originalBytes: source.size, compressedBytes: output.size, width: targetWidth, height: targetHeight, keptOriginal: false, optimizationMode };
 }
 
 export function validateImageSelection(file: Pick<File, "type" | "size">): string | null {
@@ -125,9 +142,10 @@ async function canvasToOptimizedBlob(canvas: HTMLCanvasElement, sourceMimeType: 
   return canvasToBlob(canvas, "image/jpeg", quality);
 }
 
-export async function compressImageForUpload(source: File): Promise<CompressedImage> {
+export async function compressImageForUpload(source: File, optimizationMode: ImageOptimizationMode = "balanced"): Promise<CompressedImage> {
   const image = await loadImage(source);
-  const target = calculateImageDimensions(image.naturalWidth, image.naturalHeight);
+  const settings = getImageOptimizationSettings(optimizationMode, source.size);
+  const target = calculateImageDimensions(image.naturalWidth, image.naturalHeight, settings.maxDimension);
   const canvas = document.createElement("canvas");
   canvas.width = target.width;
   canvas.height = target.height;
@@ -136,11 +154,10 @@ export async function compressImageForUpload(source: File): Promise<CompressedIm
   context.drawImage(image, 0, 0, target.width, target.height);
 
   let output: Blob | null = null;
-  const targetBytes = calculatePreferredImageUploadBytes(source.size);
-  for (const quality of [0.78, 0.68, 0.58, 0.48]) {
+  for (const quality of settings.qualities) {
     const candidate = await canvasToOptimizedBlob(canvas, source.type as AcceptedImageMimeType, quality);
     if (!output || candidate.size < output.size) output = candidate;
-    if (output.size <= targetBytes) break;
+    if (output.size <= settings.targetBytes) break;
   }
   if (!output || output.size > maxImageUploadBytes) throw new Error("変換後も5MBを超えています。より小さな画像を選択してください。");
 
@@ -151,5 +168,6 @@ export async function compressImageForUpload(source: File): Promise<CompressedIm
     originalHeight: image.naturalHeight,
     targetWidth: target.width,
     targetHeight: target.height,
+    optimizationMode,
   });
 }
