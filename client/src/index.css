@@ -14,6 +14,7 @@
 @import "./admin-image-upload.css";
 @import "./content-image-uploads.css";
 @import "./water-blue-refinement.css";
+@import "./gallery-image-viewer.css";
 
 @custom-variant dark (&:is(.dark *));
 
