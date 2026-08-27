@@ -16,6 +16,7 @@
 @import "./water-blue-refinement.css";
 @import "./gallery-image-viewer.css";
 @import "./admin-batch-shared-metadata.css";
+@import "./game-landing.css";
 
 @custom-variant dark (&:is(.dark *));
 
