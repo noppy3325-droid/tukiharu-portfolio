@@ -13,6 +13,7 @@
 @import "./mobile-navigation-fix.css";
 @import "./admin-image-upload.css";
 @import "./content-image-uploads.css";
+@import "./aura-x1.css";
 
 @custom-variant dark (&:is(.dark *));
 
