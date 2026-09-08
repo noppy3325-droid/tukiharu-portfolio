@@ -1,7 +1,10 @@
 import { TsukiLayout } from "@/components/TsukiLayout";
 import { buildHomeUpdates } from "@/lib/homeUpdates";
 import { trpc } from "@/lib/trpc";
+import { useEffect } from "react";
 import { Link } from "wouter";
+
+export const HOME_SEO_TITLE = "月春の資材置き場｜写真・作品・本・Blogを記録する個人ポートフォリオサイト";
 
 type GalleryEntry = { id: string; href: string; title: string; meta: string; updatedAt: Date | string; kind: "work" | "book" | "photo" | "note"; imageUrl?: string | null };
 function formatDate(date: Date | string) { return new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(date)); }
@@ -12,6 +15,10 @@ function GalleryThumbnail({ kind }: { kind: GalleryEntry["kind"] }) {
 }
 
 export default function Home() {
+  useEffect(() => {
+    document.title = HOME_SEO_TITLE;
+  }, []);
+
   const works = trpc.content.works.list.useQuery();
   const books = trpc.content.books.list.useQuery();
   const photos = trpc.content.gallery.list.useQuery();
