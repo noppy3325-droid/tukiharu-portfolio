@@ -172,7 +172,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (!id.includes("node_modules")) return;
-          if (id.includes("@babylonjs")) return "flight-engine";
           if (id.includes("@trpc") || id.includes("@tanstack/react-query") || id.includes("superjson")) return "data-client";
           if (id.includes("@radix-ui") || id.includes("sonner") || id.includes("vaul")) return "ui-primitives";
           if (id.includes("react") || id.includes("wouter")) return "react-runtime";
