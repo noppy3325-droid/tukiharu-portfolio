@@ -68,7 +68,7 @@ export function AdminBatchImageUpload({ onUploaded }: AdminBatchImageUploadProps
           const result = await upload.mutateAsync({ filename: image.file.name, mimeType: image.file.type as (typeof acceptedImageMimeTypes)[number], base64, scope: "gallery" });
           uploaded.push({ filename: image.file.name, url: result.url });
         } catch (error) {
-          uploadFailures.push(`${image.title}：${error instanceof Error ? error.message : "S3へアップロードできませんでした。"}`);
+          uploadFailures.push(`${image.title}：${error instanceof Error ? error.message : "サーバーへアップロードできませんでした。"}`);
         } finally {
           setProgress({ completed: index + 1, total: images.length });
         }

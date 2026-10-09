@@ -33,6 +33,7 @@ export const adminLoginAttempts = mysqlTable("adminLoginAttempts", {
 export const siteSettings = mysqlTable("siteSettings", {
   id: int("id").primaryKey(),
   introduction: text("introduction").notNull(),
+  profileJson: text("profileJson"),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
@@ -43,6 +44,7 @@ export const works = mysqlTable("works", {
   category: varchar("category", { length: 80 }).notNull(),
   url: varchar("url", { length: 1024 }),
   thumbnailUrl: varchar("thumbnailUrl", { length: 2048 }),
+  pdfUrl: varchar("pdfUrl", { length: 2048 }),
   accent: varchar("accent", { length: 30 }).default("pink").notNull(),
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

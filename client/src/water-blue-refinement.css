@@ -57,13 +57,13 @@ body:after { opacity: 0.62; }
 }
 .gallery-update-list li, .simple-blog-row, .simple-work-card, .tsuki-work-card, .tsuki-photo-list article { contain: layout paint style; }
 
-@media (min-width: 761px) {
-  .gallery-home-info {
-    width: 100vw !important;
-    max-width: none !important;
-    margin-left: calc(50% - 50vw) !important;
-    margin-right: calc(50% - 50vw) !important;
-    padding-left: max(28px, calc((100vw - 1124px) / 2)) !important;
-    padding-right: max(28px, calc((100vw - 1124px) / 2)) !important;
-  }
+/* Keep these bands inside the shared shell; viewport-sized negative-margin
+   layers and slanted clipping previously overlapped adjacent sections. */
+.gallery-home-info, .gallery-updates {
+  width: auto;
+  margin: 0;
+  padding: 48px clamp(20px, 4vw, 48px);
+  clip-path: none;
+  border-radius: 8px;
 }
+.gallery-updates { margin: 28px 0 48px; }

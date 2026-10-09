@@ -58,7 +58,7 @@ export default function RichTextEditor({ value, onChange, label = "本文" }: Ri
     setImageStatus("画像を圧縮しています…");
     try {
       const compressed = await compressImageForUpload(file, optimizationMode);
-      setImageStatus(`圧縮後 ${formatImageBytes(compressed.compressedBytes)}。S3へアップロードしています…`);
+      setImageStatus(`圧縮後 ${formatImageBytes(compressed.compressedBytes)}。サーバーへアップロードしています…`);
       const base64 = await readFileAsBase64(compressed.file);
       pendingImageAltRef.current = imageAltText;
       upload.mutate({ filename: compressed.file.name, mimeType: compressed.file.type as (typeof acceptedImageMimeTypes)[number], base64, scope: "blog" });

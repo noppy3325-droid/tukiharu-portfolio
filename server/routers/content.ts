@@ -6,14 +6,14 @@ import { createImageStorageKey, decodeAndValidateImage, IMAGE_UPLOAD_BASE64_MAX_
 import { ownerProcedure } from "./guards";
 import { storagePut } from "../storage";
 import { isAllowedContentImageUrl, isHttpsUrl } from "../contentUrl";
+import { profileSchema } from "../../shared/profileSchema";
 
 const contentImageUrl = z.string().max(2048).refine(isAllowedContentImageUrl, "HTTPSまたはアップロード済みの画像URLを入力してください。");
 const optionalContentImageUrl = contentImageUrl.optional().or(z.literal(""));
-const workInput = z.object({ title: z.string().min(1).max(160), summary: z.string().min(1).max(2000), category: z.string().min(1).max(80), url: z.string().max(2048).refine(value => value === "" || isHttpsUrl(value), "作品リンクはHTTPS URLを入力してください。"), thumbnailUrl: optionalContentImageUrl, accent: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
+const workInput = z.object({ title: z.string().min(1).max(160), summary: z.string().min(1).max(2000), category: z.string().min(1).max(80), url: z.string().max(2048).refine(value => value === "" || isHttpsUrl(value), "作品リンクはHTTPS URLを入力してください。"), thumbnailUrl: optionalContentImageUrl, pdfUrl: z.string().max(2048).optional(), accent: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
 const bookInput = z.object({ title: z.string().min(1).max(180), author: z.string().min(1).max(160), note: z.string().min(1).max(2000), coverImageUrl: optionalContentImageUrl, coverColor: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
 const galleryInput = z.object({ title: z.string().min(1).max(160), caption: z.string().min(1).max(2000), imageUrl: contentImageUrl, camera: z.string().max(180).optional().or(z.literal("")), lens: z.string().max(180).optional().or(z.literal("")), location: z.string().max(240).optional().or(z.literal("")), takenAt: z.date().nullable(), rotation: z.number().int().min(-20).max(20), sortOrder: z.number().int().min(0).max(999) });
 const idInput = z.object({ id: z.number().int().positive() });
-const introductionInput = z.object({ introduction: z.string().trim().min(1, "自己紹介文を入力してください。").max(3000) });
 const imageUploadInput = z.object({
   filename: z.string().trim().min(1).max(255),
   mimeType: z.enum(allowedImageMimeTypes),
@@ -31,7 +31,7 @@ export const contentRouter = router({
 export const adminContentRouter = router({
   profile: router({
     get: ownerProcedure.query(() => db.getSiteSettings()),
-    update: ownerProcedure.input(introductionInput).mutation(({ input }) => db.setSiteIntroduction(input.introduction)),
+    update: ownerProcedure.input(profileSchema).mutation(({ input }) => db.setSiteProfile(input)),
   }),
   works: router({
     list: ownerProcedure.query(() => db.listWorks()),

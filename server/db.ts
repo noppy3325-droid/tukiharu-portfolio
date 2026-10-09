@@ -1,4 +1,5 @@
 import { and, count, desc, eq, gte, isNull, sql } from "drizzle-orm";
+import { defaultProfile, type Profile } from "../shared/profile";
 import { drizzle } from "drizzle-orm/mysql2";
 import { adminCredentials, adminLoginAttempts, blogComments, blogLikes, blogPosts, books, galleryItems, InsertUser, siteSettings, users, works } from "../drizzle/schema";
 
@@ -104,7 +105,8 @@ export async function recordAdminLoginFailure(keyHash: string, attemptedAt: Date
 export async function clearAdminLoginAttempt(keyHash: string) { const db = await requireDb(); await db.delete(adminLoginAttempts).where(eq(adminLoginAttempts.keyHash, keyHash)); }
 
 const DEFAULT_INTRODUCTION = "つくったもの、読んだもの、Gallery、日々のBlog記事をまとめる個人のアーカイブです。気になることがあれば、下のメールアドレスから気軽にご連絡ください。";
-export async function getSiteSettings() { const db = await requireDb(); const rows = await db.select().from(siteSettings).where(eq(siteSettings.id, 1)).limit(1); return rows[0] ?? { id: 1, introduction: DEFAULT_INTRODUCTION, updatedAt: null }; }
+export async function getSiteSettings(): Promise<Profile> { const db = await requireDb(); const rows = await db.select().from(siteSettings).where(eq(siteSettings.id, 1)).limit(1); const row = rows[0]; return { ...defaultProfile, ...(row?.profileJson ? JSON.parse(row.profileJson) : {}), introduction: row?.introduction ?? DEFAULT_INTRODUCTION }; }
+export async function setSiteProfile(profile: Profile) { const db = await requireDb(); const profileJson = JSON.stringify(profile); await db.insert(siteSettings).values({ id: 1, introduction: profile.introduction, profileJson }).onDuplicateKeyUpdate({ set: { introduction: profile.introduction, profileJson } }); return { success: true }; }
 export async function setSiteIntroduction(introduction: string) { const db = await requireDb(); await db.insert(siteSettings).values({ id: 1, introduction }).onDuplicateKeyUpdate({ set: { introduction } }); return { success: true }; }
 
 export async function listWorks() { const db = await requireDb(); return db.select().from(works).orderBy(works.sortOrder, desc(works.createdAt)); }

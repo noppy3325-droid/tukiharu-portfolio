@@ -1,0 +1,547 @@
+.profile-page {
+  padding: 38px 0 80px;
+  color: var(--gallery-ink);
+}
+.profile-back,
+.profile-socials a,
+.profile-links a,
+.profile-section a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #39708a;
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+.profile-back {
+  margin-bottom: 28px;
+}
+.profile-header {
+  position: relative;
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 38px;
+  align-items: center;
+  padding: clamp(28px, 5vw, 60px);
+  background: linear-gradient(120deg, #e7f4f9, #f5fafc);
+  border: 1px solid #cce3ec;
+  border-radius: 12px;
+}
+.profile-avatar {
+  width: 150px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #d1e8f2;
+  color: #5a8194;
+  font:
+    64px "Shippori Mincho",
+    serif;
+  overflow: hidden;
+}
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-header h1 {
+  margin: 0 0 12px;
+  font:
+    500 clamp(2rem, 4vw, 3.1rem) "Shippori Mincho",
+    serif;
+  letter-spacing: 0.1em;
+}
+.profile-headline {
+  color: #507489;
+  font-size: 1rem;
+}
+.profile-introduction {
+  max-width: 40rem;
+  font-size: 0.85rem;
+  line-height: 2;
+  white-space: pre-line;
+}
+.profile-socials {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.profile-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 25px 0;
+  border-bottom: 1px solid var(--gallery-line);
+}
+.profile-index a {
+  font:
+    0.68rem "DM Mono",
+    monospace;
+  color: #66899a;
+  text-decoration: none;
+  padding: 7px 0;
+}
+.profile-columns {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 50px;
+}
+.profile-section {
+  padding: 48px 0;
+  border-bottom: 1px solid var(--gallery-line);
+  scroll-margin-top: 24px;
+  min-width: 0;
+}
+.profile-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 25px;
+  font:
+    500 clamp(1.25rem, 2vw, 1.65rem) "Shippori Mincho",
+    serif;
+}
+.profile-prose {
+  white-space: pre-line;
+  font-size: 0.87rem;
+  line-height: 2.2;
+}
+.profile-empty {
+  color: #718a96;
+  font-size: 0.8rem;
+}
+.profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.profile-tags span {
+  padding: 7px 12px;
+  border: 1px solid #d1e4ed;
+  border-radius: 20px;
+  background: #f4f9fc;
+  font-size: 0.75rem;
+}
+.interest-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.interest-group {
+  position: relative;
+  padding: 25px;
+  background: #eaf5fa;
+  border-radius: 8px;
+}
+.interest-tone-1 {
+  background: #f3f0f7;
+}
+.interest-tone-2 {
+  background: #f3f6ee;
+}
+.interest-number {
+  font:
+    0.65rem "DM Mono",
+    monospace;
+  color: #7e9cab;
+}
+.interest-group h3 {
+  margin: 12px 0 20px;
+  font-size: 1rem;
+}
+.interest-group .profile-tags span {
+  background: #ffffff90;
+  border-color: transparent;
+}
+.personal-notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 30px;
+}
+.personal-notes li {
+  padding: 18px 0;
+  border-bottom: 1px dashed #ccdfe7;
+  font-size: 0.87rem;
+}
+.personal-notes span {
+  color: #78a6bb;
+  margin-right: 12px;
+}
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.device-panel {
+  border: 1px solid #cbdee8;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+.device-visual {
+  height: 180px;
+  background:
+    repeating-linear-gradient(0deg, #e9f3f8 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, #e9f3f8 0 1px, #f5fafc 1px 22px);
+  display: grid;
+  place-items: center;
+  color: #79a1b5;
+}
+.device-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.device-copy {
+  padding: 25px;
+}
+.device-status {
+  font:
+    0.62rem "DM Mono",
+    monospace;
+  color: #7097aa;
+  letter-spacing: 0.08em;
+}
+.device-copy h3 {
+  font-size: 1.1rem;
+  margin: 12px 0 20px;
+}
+.device-copy dl {
+  margin: 0;
+}
+.device-copy dl > div {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid #e4eef3;
+}
+.device-copy dt {
+  font:
+    0.62rem "DM Mono",
+    monospace;
+  color: #7997a4;
+}
+.device-copy dd {
+  margin: 0;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+.device-software {
+  font-size: 0.78rem;
+  color: #6d8794;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+.music-library {
+  display: grid;
+  gap: 16px;
+}
+.music-record {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr) 32px;
+  gap: 24px;
+  align-items: center;
+  background: #edf5f9;
+  padding: 20px;
+  border-radius: 8px;
+}
+.music-artwork {
+  width: 100px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  color: #66879b;
+  background: linear-gradient(135deg, #c3d9e8, #e3e3ee);
+  border-radius: 4px;
+}
+.music-artwork img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.music-record small {
+  font:
+    0.62rem "DM Mono",
+    monospace;
+  color: #7496a8;
+}
+.music-record h3 {
+  margin: 8px 0;
+  font-size: 1rem;
+}
+.music-record p {
+  font-size: 0.8rem;
+  margin: 6px 0;
+}
+.music-note {
+  color: #6d8794;
+  white-space: pre-line;
+  line-height: 1.8;
+}
+.music-bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 26px;
+}
+.music-bars i {
+  width: 3px;
+  height: 12px;
+  background: #83aec0;
+}
+.music-bars i:nth-child(2) {
+  height: 24px;
+}
+.music-bars i:nth-child(3) {
+  height: 18px;
+}
+.activity-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.activity-timeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 24px;
+  margin-left: 6px;
+  padding: 0 0 36px 26px;
+  border-left: 1px solid #c8dfe9;
+}
+.activity-timeline li:before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 5px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #6ea1b9;
+  box-shadow: 0 0 0 4px #edf6fa;
+}
+.activity-timeline time {
+  font:
+    0.7rem "DM Mono",
+    monospace;
+  color: #6d90a3;
+}
+.activity-timeline h3 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+}
+.activity-timeline p {
+  white-space: pre-line;
+  font-size: 0.83rem;
+  line-height: 1.9;
+}
+.profile-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.profile-links a {
+  padding: 14px 20px;
+  border: 1px solid #cddfe8;
+  border-radius: 5px;
+}
+.tilt-card {
+  --mx: 50%;
+  --my: 50%;
+  --rx: 0deg;
+  --ry: 0deg;
+  transform-style: preserve-3d;
+}
+.tsuki-work-card.tilt-card {
+  position: relative;
+  contain: none;
+  content-visibility: visible;
+}
+.tilt-card:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--mx) var(--my),
+    #ffffff88,
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .tilt-card {
+    transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));
+    transition: transform 0.2s ease-out;
+  }
+  .tilt-card:hover:after {
+    opacity: 1;
+  }
+  .profile-header h1 {
+    transform: translateZ(12px);
+  }
+}
+.menu-morph {
+  display: inline-grid;
+  width: 20px;
+  gap: 5px;
+}
+.menu-morph i {
+  display: block;
+  height: 1px;
+  width: 20px;
+  background: currentColor;
+  transition:
+    transform 0.22s ease,
+    opacity 0.18s;
+}
+.menu-morph[data-open="true"] i:first-child {
+  transform: translateY(6px) rotate(45deg);
+}
+.menu-morph[data-open="true"] i:nth-child(2) {
+  opacity: 0;
+}
+.menu-morph[data-open="true"] i:last-child {
+  transform: translateY(-6px) rotate(-45deg);
+}
+.gallery-menu-close {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  padding: 12px;
+  color: #52788a;
+}
+.gallery-mobile-sheet > button[data-slot="sheet-close"] {
+  display: none;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #4b92b4;
+  outline-offset: 4px;
+}
+.gallery-home-profile-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  padding: 16px;
+  margin: -16px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.gallery-home-profile-link:hover {
+  background: #ffffff65;
+}
+.gallery-home-profile-link small {
+  display: inline-block;
+  margin-top: 18px;
+  color: #39708a;
+}
+.gallery-header a[aria-current="page"] {
+  color: #3c7794;
+  border-bottom: 1px solid #83b3c8;
+}
+.gallery-footer span {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.admin-profile-form {
+  display: grid;
+  gap: 20px;
+  max-width: 100%;
+}
+.admin-repeat {
+  display: grid;
+  gap: 16px;
+  border: 1px solid #d5e6ed;
+  padding: 20px;
+  margin: 10px 0;
+  border-radius: 6px;
+}
+.admin-repeat > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.admin-repeat h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.admin-profile-group {
+  padding-top: 22px;
+  border-top: 1px solid #d5e6ed;
+}
+.admin-profile-group h2 {
+  font-size: 1.15rem;
+}
+.admin-feedback {
+  color: #94556d;
+  white-space: pre-line;
+}
+@media (max-width: 760px) {
+  .profile-header {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .profile-avatar {
+    width: 100px;
+    font-size: 44px;
+  }
+  .profile-columns,
+  .device-grid,
+  .personal-notes {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .interest-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-section {
+    padding: 36px 0;
+  }
+  .music-record {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px;
+  }
+  .music-artwork {
+    width: 72px;
+  }
+  .music-bars {
+    display: none;
+  }
+  .activity-timeline li {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .gallery-footer span {
+    gap: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .tilt-card {
+    transform: none !important;
+  }
+  .tilt-card:after {
+    display: none;
+  }
+}

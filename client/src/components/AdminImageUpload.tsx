@@ -33,6 +33,12 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
   useEffect(() => () => {
     if (localPreviewUrl?.startsWith("blob:")) URL.revokeObjectURL(localPreviewUrl);
   }, [localPreviewUrl]);
+  useEffect(() => {
+    setSelectedImage(null);
+    setLocalPreviewUrl(null);
+    setSelectionError(null);
+    if (inputRef.current) inputRef.current.value = "";
+  }, [value]);
 
   const previewUrl = localPreviewUrl ?? value;
 
@@ -92,12 +98,12 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
       <label className="admin-image-optimization" htmlFor={`${inputId}-optimization`}><span>最適化</span><select id={`${inputId}-optimization`} value={optimizationMode} onChange={event => setOptimizationMode(event.target.value as ImageOptimizationMode)} disabled={isCompressing || upload.isPending}>{Object.entries(imageOptimizationModeLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
       <span>{isCompressing ? "画像を圧縮中…" : selectedImage ? `${selectedImage.file.name}（${formatImageBytes(selectedImage.compressedBytes)}）` : "ファイル未選択"}</span>
       <Button type="button" className="rounded-xl bg-[#4f8eaa] hover:bg-[#3e7892]" disabled={!selectedImage || isCompressing || upload.isPending} onClick={uploadSelectedFile}>
-        {upload.isPending ? <LoaderCircle className="animate-spin" size={16} /> : <Upload size={16} />} {upload.isPending ? "アップロード中…" : "S3へアップロード"}
+        {upload.isPending ? <LoaderCircle className="animate-spin" size={16} /> : <Upload size={16} />} {upload.isPending ? "アップロード中…" : "サーバーへアップロード"}
       </Button>
     </div>
     {previewUrl ? <div className="admin-image-preview"><img src={previewUrl} alt="選択した画像のプレビュー" /><div><strong>{localPreviewUrl?.startsWith("blob:") ? selectedImage?.keptOriginal ? "元画像を使用" : "最適化後のプレビュー" : "現在の画像"}</strong><span>{localPreviewUrl?.startsWith("blob:") && selectedImage ? selectedImage.keptOriginal ? <>元画像 {formatImageBytes(selectedImage.originalBytes)}をそのまま使用します（変換後の方が大きくなるため）</> : <>{imageOptimizationModeLabels[selectedImage.optimizationMode]}：元画像 {formatImageBytes(selectedImage.originalBytes)} → 最適化後 {formatImageBytes(selectedImage.compressedBytes)}（{selectedImage.width} × {selectedImage.height}px）</> : "アップロード後、または画像URL入力後にここへ表示されます。"}</span>{localPreviewUrl?.startsWith("blob:") && <Button type="button" variant="ghost" onClick={clearSelectedFile}><X size={15} />選択を取り消す</Button>}</div></div> : <div className="admin-image-preview admin-image-preview-empty"><ImagePlus size={21} /><span>{isCompressing ? "画像の最適化プレビューを準備しています…" : "ファイルを選択すると、最適化後のプレビューがここに表示されます。"}</span></div>}
     {selectionError && <p className="admin-login-error" role="alert">{selectionError}</p>}
     {upload.error && <p className="admin-login-error" role="alert">{upload.error.message || "画像をアップロードできませんでした。"}</p>}
-    {upload.isSuccess && <p className="admin-save-success">S3へアップロードし、フォームへ画像URLを反映しました。続けて「写真を追加」または「変更を保存」を押してください。</p>}
+    {upload.isSuccess && <p className="admin-save-success">サーバーへアップロードし、フォームへ画像URLを反映しました。続けてフォームの保存ボタンを押してください。</p>}
   </section>;
 }
