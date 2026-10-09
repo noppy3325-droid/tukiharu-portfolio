@@ -14,11 +14,14 @@ for (const directory of [fixture.privateDir, fixture.publicDir]) {
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
 const browser = await chromium.launch({ headless: true, channel: "chrome" });
+let touchBrowser;
 const base = "http://127.0.0.1:8080";
 const widths = [320, 375, 430, 768, 1024, 1440];
 const output = path.resolve(".tools/responsive-verified");
 fs.mkdirSync(output, { recursive: true });
 const page = await browser.newPage();
+page.setDefaultTimeout(15_000);
+page.setDefaultNavigationTimeout(30_000);
 const errors = [];
 const report = [];
 page.on("pageerror", error => errors.push(error.message));
@@ -129,7 +132,7 @@ async function stress(name, width) {
   await page.evaluate(() => {
     const long = "LongUnbrokenTitleOrURL".repeat(10);
     for (const e of document.querySelectorAll(
-      ".gallery-card h2,.tsuki-work-card h2,.tsuki-work-card > div p,.tsuki-work-link span,.tsuki-photo-list h2,.tsuki-photo-list p,.profile-header h1,.profile-prose,.profile-tags span,.music-record h3,.activity-timeline h3,.simple-blog-row h2,.simple-article > header h1,.simple-comment-list article p,.content-list h3,.device-copy dd"
+      ".portfolio-archive-heading h1,.gallery-card h2,.tsuki-work-card h2,.tsuki-work-card > div p,.tsuki-work-link span,.tsuki-photo-list h2,.tsuki-photo-list p,.profile-header h1,.profile-prose,.profile-tags span,.music-record h3,.activity-timeline h3,.simple-blog-row h2,.simple-article > header h1,.simple-comment-list article p,.content-list h3,.device-copy dd"
     )) {
       e.textContent = `${long} 写真・制作の記録を読みやすく残すための長い文章です。`;
     }
@@ -148,6 +151,42 @@ async function mutate(procedure, input) {
     `${procedure}: QA fixture mutation failed`
   );
   return result.result.data.json;
+}
+
+async function assertMenuFocus(target) {
+  // More steps than there are controls verifies both ends of the focus loop.
+  for (const key of ["Tab", "Shift+Tab"]) {
+    for (let step = 0; step < 16; step++) {
+      await target.keyboard.press(key);
+      assert(
+        await target.evaluate(() =>
+          Boolean(document.activeElement?.closest(".gallery-mobile-sheet"))
+        ),
+        `${key} focus must remain in the menu`
+      );
+    }
+  }
+}
+
+async function assertMenuTargets(target) {
+  const controls = target.locator(
+    ".gallery-mobile-nav a,.gallery-menu-close,.gallery-menu-contact"
+  );
+  const sizes = await controls.evaluateAll(es =>
+    es.map(e => {
+      const box = e.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    })
+  );
+  assert.equal(
+    sizes.length,
+    8,
+    "Six destinations, close and contact controls required"
+  );
+  assert(
+    sizes.every(box => box.width >= 44 && box.height >= 44),
+    "Menu controls require 44px touch targets"
+  );
 }
 
 try {
@@ -175,6 +214,15 @@ try {
       await ready();
       const name = route === "/" ? "home" : route.replaceAll("/", "-").slice(1);
       await inspect(name, width);
+      if (route.startsWith("/blog/")) {
+        assert.equal(
+          await page
+            .locator('.gallery-desktop-nav a[href="/blog"]')
+            .getAttribute("aria-current"),
+          "page",
+          "Article routes must keep Blog as the current destination"
+        );
+      }
       if (route === "/") {
         const thumbs = await page
           .locator(".gallery-grid .gallery-thumb")
@@ -295,13 +343,96 @@ try {
     }
   }
 
-  // Real DOM keyboard/touch events in a Chrome mobile emulation context.
-  const touch = await browser.newContext({
+  // Mobile menus have their own layout, including the narrow and short views.
+  for (const width of [320, 375, 430]) {
+    await page.setViewportSize({ width, height: 568 });
+    await page.goto(base + `/blog/${posts[0].slug}`);
+    const menu = page.getByRole("button", {
+      name: "メニューを開く",
+      exact: true,
+    });
+    await menu.click();
+    await page.locator(".gallery-mobile-sheet").waitFor({ state: "visible" });
+    await inspect("mobile-menu", width);
+    await assertMenuTargets(page);
+    assert.equal(
+      await page
+        .locator(".gallery-mobile-nav")
+        .getByRole("link", { name: "Blog", exact: true })
+        .getAttribute("aria-current"),
+      "page"
+    );
+    if (width === 320) await assertMenuFocus(page);
+    await page.locator(".gallery-menu-close").click();
+    await page.locator(".gallery-mobile-sheet").waitFor({ state: "hidden" });
+    assert(
+      await menu.evaluate(e => e === document.activeElement),
+      "Close button returns focus to the menu trigger"
+    );
+  }
+
+  // Crossing the breakpoint must release the modal and restore a usable header.
+  await page.setViewportSize({ width: 767, height: 568 });
+  await page.goto(base + "/about");
+  await page
+    .getByRole("button", { name: "メニューを開く", exact: true })
+    .click();
+  await page.locator(".gallery-mobile-sheet").waitFor({ state: "visible" });
+  await page.setViewportSize({ width: 768, height: 568 });
+  await page.locator(".gallery-mobile-sheet").waitFor({ state: "hidden" });
+  await page.locator(".gallery-desktop-nav").waitFor({ state: "visible" });
+  assert(
+    await page.evaluate(() => {
+      const active = document.activeElement;
+      return (
+        !document.body.hasAttribute("data-scroll-locked") &&
+        getComputedStyle(document.body).overflow !== "hidden" &&
+        Boolean(active?.matches(".gallery-desktop-nav a")) &&
+        active.checkVisibility()
+      );
+    }),
+    "Desktop resize must unlock scrolling and focus a visible navigation link"
+  );
+  await page.setViewportSize({ width: 767, height: 568 });
+  await page
+    .getByRole("button", { name: "メニューを開く", exact: true })
+    .click();
+  await page.locator(".gallery-mobile-sheet").waitFor({ state: "visible" });
+  await page.keyboard.press("Escape");
+  await page.locator(".gallery-mobile-sheet").waitFor({ state: "hidden" });
+
+  await page.setViewportSize({ width: 667, height: 375 });
+  await page
+    .getByRole("button", { name: "メニューを開く", exact: true })
+    .click();
+  await page.locator(".gallery-mobile-sheet").waitFor({ state: "visible" });
+  await inspect("mobile-menu-landscape", 667);
+  for (const link of await page.locator(".gallery-mobile-nav a").all()) {
+    await link.scrollIntoViewIfNeeded();
+    const box = await link.boundingBox();
+    // Native scroll positions round to pixels while text boxes retain fractions.
+    assert(
+      box && box.y >= -1 && box.y + box.height <= 376,
+      `Landscape destination ${await link.getAttribute("aria-label")} must be reachable: ${JSON.stringify(box)}`
+    );
+  }
+  await page.locator(".gallery-menu-close").click();
+  await page.locator(".gallery-mobile-sheet").waitFor({ state: "hidden" });
+
+  // Real DOM touch events, each public destination, backdrop dismissal and viewer.
+  console.log(
+    `PASS: ${report.length} layout/stress checks; checking touch flows in a fresh browser.`
+  );
+  // Keep mobile device emulation independent of the long viewport stress run.
+  touchBrowser = await chromium.launch({ headless: true, channel: "chrome" });
+  const touch = await touchBrowser.newContext({
     viewport: { width: 375, height: 667 },
     isMobile: true,
     hasTouch: true,
   });
   const mobile = await touch.newPage();
+  mobile.setDefaultTimeout(15_000);
+  mobile.setDefaultNavigationTimeout(30_000);
   mobile.on("pageerror", error => errors.push(error.message));
   await mobile.goto(base + "/about");
   const menu = mobile.getByRole("button", {
@@ -311,13 +442,7 @@ try {
   await menu.tap();
   const sheet = mobile.locator(".gallery-mobile-sheet");
   await sheet.waitFor({ state: "visible" });
-  await mobile.keyboard.press("Tab");
-  assert(
-    await mobile.evaluate(() =>
-      Boolean(document.activeElement?.closest('[role="dialog"]'))
-    ),
-    "Focus must remain in the menu"
-  );
+  await assertMenuTargets(mobile);
   await mobile.keyboard.press("Escape");
   await sheet.waitFor({ state: "hidden" });
   assert(
@@ -325,11 +450,55 @@ try {
     "Escape returns menu focus"
   );
   await menu.tap();
-  await mobile
-    .locator(".gallery-mobile-nav")
-    .getByRole("link", { name: "Works", exact: true })
-    .tap();
-  await mobile.waitForURL("**/works");
+  await sheet.waitFor({ state: "visible" });
+  await mobile.locator('[data-slot="sheet-overlay"]').tap({
+    position: { x: 8, y: 100 },
+  });
+  await sheet.waitFor({ state: "hidden" });
+  assert(
+    await menu.evaluate(e => e === document.activeElement),
+    "Backdrop dismissal returns menu focus"
+  );
+  for (const [name, route] of [
+    ["Home", "/"],
+    ["Works", "/works"],
+    ["Gallery", "/photos"],
+    ["Blog", "/blog"],
+    ["Library", "/library"],
+    ["About", "/about"],
+  ]) {
+    await menu.tap();
+    await sheet.waitFor({ state: "visible" });
+    await mobile
+      .locator(".gallery-mobile-nav")
+      .getByRole("link", { name, exact: true })
+      .tap();
+    await mobile.waitForURL(url => url.pathname === route);
+    await sheet.waitFor({ state: "hidden" });
+  }
+  const mobileIndex = mobile.locator(".profile-mobile-index");
+  await mobileIndex.locator("summary").tap();
+  assert(await mobileIndex.evaluate(e => e.open), "Touch opens About contents");
+  const sectionTargets = await mobileIndex.locator("nav a").evaluateAll(es =>
+    es.map(e => {
+      const box = e.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    })
+  );
+  assert.equal(sectionTargets.length, 8, "All About sections stay reachable");
+  assert(
+    sectionTargets.every(box => box.width >= 44 && box.height >= 44),
+    "About section links require 44px touch targets"
+  );
+  await mobileIndex.locator('a[href="#skills"]').tap();
+  await mobile.waitForURL(url => url.hash === "#skills");
+  assert(
+    await mobile.locator("#skills h2").evaluate(e => {
+      const box = e.getBoundingClientRect();
+      return box.top >= -1 && box.bottom <= innerHeight + 1;
+    }),
+    "Touch contents link brings Skills heading into view"
+  );
   await mobile.goto(base + "/photos");
   const trigger = mobile.locator(".tsuki-gallery-image-trigger").first();
   await trigger.tap();
@@ -341,6 +510,8 @@ try {
     "Viewer returns trigger focus"
   );
   await touch.close();
+  await touchBrowser.close();
+  touchBrowser = undefined;
 
   await page.setViewportSize({ width: 320, height: 568 });
   await page.goto(base + "/about");
@@ -356,6 +527,19 @@ try {
     await page
       .locator("#portfolio-content")
       .evaluate(e => e === document.activeElement)
+  );
+  const summary = page.locator(".profile-mobile-index summary");
+  await summary.focus();
+  await page.keyboard.press("Enter");
+  assert(
+    await page.locator(".profile-mobile-index").evaluate(e => e.open),
+    "Keyboard opens About contents"
+  );
+  await inspect("about-contents", 320);
+  await page.keyboard.press("Enter");
+  assert(
+    await page.locator(".profile-mobile-index").evaluate(e => !e.open),
+    "Keyboard closes About contents"
   );
   await page
     .getByRole("button", { name: "メニューを開く", exact: true })
@@ -374,10 +558,12 @@ try {
       .evaluate(e => getComputedStyle(e).transform),
     "none"
   );
+
   assert.deepEqual(errors, []);
   console.log(
-    `PASS: ${report.length} layout/stress cases at ${widths.join("/")}px; square thumbnails, text containment, admin tabs/password, keyboard focus, skip navigation, touch menu/viewer, reduced motion. Screenshots: ${output}`
+    `PASS: ${report.length} layout/stress cases at ${widths.join("/")}px; square thumbnails, long content, admin tabs/password, menu targets/focus/landscape/resize, six touch destinations, About contents, backdrop/viewer, skip navigation and reduced motion. Screenshots: ${output}`
   );
 } finally {
+  await touchBrowser?.close();
   await browser.close();
 }

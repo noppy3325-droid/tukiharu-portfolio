@@ -12,6 +12,17 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 
+const profileSections = [
+  { id: "about", label: "About", mobileLabel: "私について" },
+  { id: "skills", label: "Skills", mobileLabel: "できること" },
+  { id: "interests", label: "Interests", mobileLabel: "好きなもの" },
+  { id: "personal", label: "Personal", mobileLabel: "こんな人です" },
+  { id: "pc-environment", label: "PC Environment", mobileLabel: "制作環境" },
+  { id: "music", label: "Music", mobileLabel: "音楽" },
+  { id: "activity", label: "Activity", mobileLabel: "活動のあしあと" },
+  { id: "links", label: "Links", mobileLabel: "リンク" },
+];
+
 function External({
   href,
   children,
@@ -90,25 +101,30 @@ export default function About() {
           </div>
         </TiltCard>
         <nav className="profile-index" aria-label="自己紹介のセクション">
-          {[
-            "About",
-            "Skills",
-            "Interests",
-            "Personal",
-            "PC Environment",
-            "Music",
-            "Activity",
-            "Links",
-          ].map(label => (
+          {profileSections.map(section => (
             <a
-              key={label}
-              href={`#${label.replaceAll(" ", "-").toLowerCase()}`}
+              key={section.id}
+              href={`#${section.id}`}
               data-page-transition-off
             >
-              {label}
+              {section.label}
             </a>
           ))}
         </nav>
+        <details className="profile-mobile-index">
+          <summary>このページの目次</summary>
+          <nav aria-label="自己紹介の目次">
+            {profileSections.map(section => (
+              <a
+                key={section.id}
+                href={`#${section.id}`}
+                data-page-transition-off
+              >
+                {section.mobileLabel}
+              </a>
+            ))}
+          </nav>
+        </details>
         <div className="profile-columns">
           <section id="about" className="profile-section">
             <p className="gallery-section-label">01 / ABOUT</p>

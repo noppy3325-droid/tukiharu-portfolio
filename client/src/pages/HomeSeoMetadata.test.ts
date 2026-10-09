@@ -17,7 +17,7 @@ describe("トップページSEOメタ情報", () => {
     expect(title.length).toBeGreaterThanOrEqual(30);
     expect(title.length).toBeLessThanOrEqual(60);
     expect(homeSource).toContain("document.title = HOME_SEO_TITLE");
-    expect(homeSource).toContain(`HOME_SEO_TITLE = "${title}"`);
+    expect(homeSource.match(/HOME_SEO_TITLE\s*=\s*"([^"]+)"/)?.[1]).toBe(title);
   });
 
   it("説明文を50〜160文字、関連キーワードを3〜8件に保つ", () => {

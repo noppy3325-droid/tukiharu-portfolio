@@ -29,7 +29,7 @@
 }
 
 body {
-  background: linear-gradient(155deg, #eaf7fb, #f7fcfe 60%, #e9f5fa) !important;
+  background: #f4f9fb !important;
   line-height: 1.8;
   letter-spacing: 0.035em;
 }
@@ -838,5 +838,486 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   .gallery-card:hover .gallery-thumb :is(img, svg) {
     transform: none;
+  }
+}
+
+/* Public art direction: blue paper, serif headlines and the owner's SVG logo.
+   Content remains flat; only navigation and the author masthead use surfaces. */
+.gallery-shell {
+  --portfolio-serif: "Shippori Mincho", "Yu Mincho", serif;
+}
+.gallery-header {
+  min-height: 80px;
+  gap: 12px;
+  padding-block: 10px !important;
+}
+.gallery-brand {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  padding: 0;
+}
+.gallery-brand::before {
+  content: none;
+}
+.gallery-brand-logo {
+  display: block;
+  width: clamp(144px, 18vw, 184px);
+  max-width: 100%;
+  height: auto;
+}
+.gallery-header .gallery-desktop-nav {
+  gap: clamp(12px, 2vw, 26px);
+  flex-wrap: nowrap;
+}
+.gallery-header .gallery-desktop-nav a {
+  color: var(--ui-muted);
+  letter-spacing: 0.035em;
+  border-bottom: 2px solid transparent;
+}
+.gallery-header .gallery-desktop-nav a[aria-current="page"] {
+  color: var(--ui-ink);
+  border-color: var(--ui-accent);
+}
+.gallery-mobile-menu {
+  color: var(--ui-ink);
+  background: var(--ui-surface);
+  border-color: #b9d1dd;
+  font-size: 0.6875rem;
+}
+.gallery-mobile-menu:hover {
+  background: #e5eff4;
+}
+.gallery-mobile-sheet {
+  width: min(92vw, 440px) !important;
+  max-width: 100% !important;
+  height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) 24px
+    max(24px, env(safe-area-inset-bottom)) !important;
+  gap: 24px;
+  background: #f4f9fb !important;
+  color: var(--ui-ink);
+  border-left: 1px solid var(--ui-line);
+  box-shadow: -12px 0 40px #294a5a18;
+  overflow-wrap: anywhere;
+}
+.gallery-mobile-sheet .gallery-mobile-sheet-header {
+  padding: 16px 32px 12px 0;
+  gap: 10px;
+}
+.gallery-menu-kicker {
+  margin: 0;
+  color: var(--ui-accent);
+  font:
+    500 0.75rem/1.5 "DM Mono",
+    monospace;
+  letter-spacing: 0.08em;
+}
+.gallery-menu-identity {
+  color: var(--ui-ink);
+  font:
+    500 1.375rem/1.6 "Shippori Mincho",
+    "Yu Mincho",
+    serif;
+}
+.gallery-menu-caption {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  color: var(--ui-muted);
+}
+.gallery-mobile-sheet .gallery-menu-close {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+  z-index: 10013;
+  background: #f4f9fb;
+  border: 1px solid var(--ui-line);
+  color: var(--ui-ink);
+}
+.gallery-mobile-nav {
+  flex: 0 0 auto;
+  gap: 0 !important;
+  border-top: 1px solid var(--ui-line);
+}
+.gallery-mobile-nav a.gallery-mobile-link {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 76px;
+  padding: 12px 8px !important;
+  border: 0;
+  border-bottom: 1px solid var(--ui-line);
+  border-radius: 0;
+  text-decoration: none;
+  letter-spacing: 0;
+}
+.gallery-mobile-nav a.gallery-mobile-link[aria-current="page"] {
+  background: #e6f0f5;
+  box-shadow: inset 3px 0 var(--ui-accent);
+}
+.gallery-mobile-link-number {
+  color: var(--ui-muted);
+  font:
+    0.75rem "DM Mono",
+    monospace;
+}
+.gallery-mobile-link-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.gallery-mobile-link-label {
+  font:
+    500 1.5rem/1.3 "Shippori Mincho",
+    "Yu Mincho",
+    serif;
+}
+.gallery-mobile-link-description {
+  color: var(--ui-muted);
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+.gallery-mobile-link-current {
+  padding: 4px 6px;
+  color: var(--ui-link);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.gallery-mobile-link-arrow {
+  color: var(--ui-muted);
+}
+.gallery-menu-footer {
+  margin-top: auto;
+  display: grid;
+  gap: 8px;
+  padding-top: 8px;
+}
+.gallery-menu-contact {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  color: var(--ui-ink);
+  font-size: 0.9375rem;
+  border-bottom: 1px solid var(--ui-line);
+}
+
+.portfolio-archive-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-block: var(--ui-section) 28px;
+}
+.portfolio-archive-heading .gallery-section-label {
+  margin-bottom: 10px;
+}
+.portfolio-archive-heading h1 {
+  margin: 0;
+  font: 500 clamp(1.875rem, 4vw, 3rem) / 1.5 var(--portfolio-serif);
+}
+.portfolio-archive-heading > p {
+  position: relative;
+  padding-right: 28px;
+  margin: 0;
+  color: var(--ui-muted);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+}
+.portfolio-archive-heading > p svg {
+  position: absolute;
+  right: 0;
+  bottom: 4px;
+}
+.gallery-grid .gallery-thumb {
+  border-radius: 4px;
+}
+.gallery-grid .portfolio-card-kind {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 1;
+  padding: 4px 7px;
+  background: #fcfefff2;
+  color: var(--ui-ink);
+  font:
+    500 0.75rem/1.6 "DM Mono",
+    monospace;
+  letter-spacing: 0.07em;
+}
+.gallery-card h2 {
+  font-size: 1rem;
+  letter-spacing: 0.025em;
+}
+.gallery-card-copy {
+  padding-top: 14px;
+}
+.gallery-card p {
+  color: var(--ui-muted);
+  gap: 4px 12px;
+}
+.gallery-card:focus-visible {
+  outline-offset: 6px;
+}
+.gallery-shell .portfolio-page-heading {
+  border-bottom: 1px solid var(--ui-line);
+}
+.gallery-shell .portfolio-page-heading > .gallery-section-label {
+  color: var(--ui-accent) !important;
+  font:
+    500 0.75rem/1.6 "DM Mono",
+    monospace;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+}
+.gallery-shell .portfolio-page-heading h1 {
+  margin: 0;
+  color: var(--ui-ink) !important;
+  font-family: var(--portfolio-serif);
+  font-weight: 500;
+}
+.gallery-shell .portfolio-page-heading > .portfolio-heading-description {
+  max-width: 42rem;
+  margin: 16px 0 0;
+  color: var(--ui-muted) !important;
+  font-size: var(--ui-body);
+  line-height: 1.9;
+  letter-spacing: 0.035em;
+}
+.gallery-shell .tsuki-work-card {
+  position: relative;
+}
+.gallery-shell .tsuki-work-card .portfolio-work-index {
+  display: block !important;
+  color: var(--ui-muted);
+  font:
+    0.75rem/1.6 "DM Mono",
+    monospace;
+  margin-top: 20px;
+}
+.gallery-shell .tsuki-work-card .portfolio-work-category {
+  display: block !important;
+  margin: 6px 0 0;
+  color: var(--ui-accent);
+  font-size: 0.75rem;
+}
+.gallery-shell .tsuki-work-card h2 {
+  margin-block: 8px 12px;
+  font-family: var(--portfolio-serif);
+  font-size: 1.375rem;
+}
+.gallery-shell .tsuki-work-card > div p,
+.gallery-shell .tsuki-photo-list p,
+.gallery-shell .tsuki-book-list p {
+  color: var(--ui-muted);
+}
+.gallery-shell .tsuki-work-card > div {
+  gap: 16px;
+}
+.gallery-shell .tsuki-work-card a.tsuki-work-link {
+  border-radius: 4px;
+  background: var(--ui-surface);
+}
+.tsuki-gallery-image-trigger {
+  position: relative;
+  border-radius: 4px;
+}
+.portfolio-photo-expand {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  color: var(--ui-ink);
+  background: #fcfefff2;
+  font-size: 0.75rem;
+}
+.gallery-shell .tsuki-photo-list h2 {
+  font-family: var(--portfolio-serif);
+  letter-spacing: 0.025em;
+}
+.gallery-shell .tsuki-photo-list small {
+  padding-top: 10px;
+  border-top: 1px solid var(--ui-line);
+  color: var(--ui-muted);
+}
+.gallery-shell .tsuki-book-list article {
+  padding-block: 28px;
+}
+.gallery-shell .tsuki-book-list h2 {
+  font-family: var(--portfolio-serif);
+  font-size: 1.1875rem;
+  line-height: 1.7;
+}
+.gallery-shell .simple-blog-row {
+  padding-block: 28px;
+}
+.gallery-shell .simple-blog-row h2 {
+  color: var(--ui-ink) !important;
+  font-family: var(--portfolio-serif);
+  font-size: 1.25rem;
+}
+.gallery-shell .simple-blog-row p {
+  color: var(--ui-muted) !important;
+}
+.gallery-home-info {
+  background: #e8f1f5;
+  border-radius: 4px;
+  border-block: 1px solid var(--ui-line);
+}
+.gallery-home-profile-link small {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+}
+.gallery-contact a {
+  gap: 12px;
+  line-height: 1.9;
+}
+.gallery-contact a svg {
+  flex-shrink: 0;
+}
+.gallery-updates {
+  padding-inline: 0;
+  background: transparent;
+  border-radius: 0;
+}
+.gallery-update-link {
+  grid-template-columns: minmax(0, 1fr) 20px;
+}
+.gallery-update-link > strong {
+  grid-column: 1;
+}
+.gallery-update-link > svg {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+.profile-header {
+  background: linear-gradient(120deg, #e7f1f5, #f6f8fb);
+  border-radius: 4px;
+}
+.profile-headline {
+  color: var(--ui-accent);
+  font-size: 1.0625rem;
+  margin-block: 12px;
+}
+.profile-index {
+  gap: 8px 16px;
+}
+.profile-index a {
+  padding-inline: 10px;
+  border-bottom: 1px solid var(--ui-line);
+}
+.profile-mobile-index {
+  display: none;
+  margin-top: 24px;
+  border-block: 1px solid var(--ui-line);
+}
+.profile-mobile-index summary {
+  min-height: 48px;
+  padding-block: 12px;
+  font-size: 0.875rem;
+  color: var(--ui-ink);
+  cursor: pointer;
+}
+.profile-mobile-index nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 12px;
+  padding-bottom: 16px;
+}
+.profile-mobile-index a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ui-link);
+  font-size: 0.8125rem;
+  text-decoration: none;
+}
+.interest-group {
+  background: transparent;
+  border-radius: 0;
+  border-left: 2px solid var(--ui-line);
+  padding: 12px 20px;
+}
+.music-record {
+  background: #e9f1f5;
+  border-radius: 4px;
+}
+.profile-section {
+  scroll-margin-top: 100px;
+}
+
+@media (max-width: 767px) {
+  .gallery-header {
+    position: sticky;
+    top: 0;
+    margin-inline: calc(-1 * var(--ui-gutter));
+    padding-inline: var(--ui-gutter) !important;
+    background: #f4f9fb;
+  }
+  .gallery-header .gallery-desktop-nav {
+    display: none !important;
+  }
+  .profile-header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .profile-index {
+    display: none;
+  }
+  .profile-mobile-index {
+    display: block;
+  }
+  .interest-grid,
+  .device-grid,
+  .personal-notes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gallery-shell .tsuki-photo-list h2 {
+    font-size: 1rem;
+  }
+  .gallery-shell .tsuki-photo-list p {
+    font-size: 0.875rem;
+  }
+}
+@media (min-width: 768px) {
+  .gallery-update-link {
+    grid-template-columns: minmax(180px, 0.42fr) minmax(0, 1fr) 20px;
+  }
+  .gallery-update-link > strong {
+    grid-column: 2;
+  }
+  .gallery-update-link > svg {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+@media (min-width: 1024px) {
+  .gallery-shell .tsuki-book-list article {
+    grid-template-columns: 48px minmax(0, 0.8fr) minmax(0, 1fr) !important;
+    gap: 24px;
+  }
+  .gallery-shell .tsuki-book-list article > p {
+    grid-column: 3 !important;
+  }
+  .gallery-shell .library-card-with-cover {
+    grid-template-columns: 88px minmax(0, 0.8fr) minmax(0, 1fr) !important;
+  }
+  .gallery-shell .library-card-with-cover .library-cover {
+    width: 88px;
+    height: 120px;
+    grid-row: 1 / span 2;
+  }
+  .library-card-with-cover > span {
+    display: none;
+  }
+  .library-card-with-cover > div,
+  .gallery-shell .library-card-with-cover > p {
+    grid-row: 1;
   }
 }
