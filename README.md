@@ -32,14 +32,43 @@ The PHP integration command needs PHP on PATH (or PHP_BIN). It uses local port
 Browser QA optionally uses Playwright with installed Chrome; provide
 PLAYWRIGHT_MODULE when using a bundled module instead of a project dependency.
 
+### Responsive UI regression check
+
+The UI uses a mobile-first grid: one column below 360px, two columns from
+360px, three from 768px, and four from 1200px. Works keeps fewer columns so
+summaries remain readable. The compact public menu appears below 768px; the
+admin section menu appears below 1024px.
+
+After creating the isolated XServer fixture, run the preview and browser check
+in separate terminals:
+
+```sh
+node scripts/test-xserver.mjs
+node scripts/serve-preview.mjs
+# In a second terminal, while the preview is running:
+pnpm test:responsive
+```
+
+`test:responsive` checks Home, About, Works, Gallery, Library, Blog, an
+article, visitor registration, admin and 404 pages at 320, 375, 430, 768, 1024
+and 1440px. It also checks long strings, keyboard focus, touch controls and
+`prefers-reduced-motion`. Screenshots and the report stay in ignored `.tools`
+fixtures. See [the UI/UX audit](docs/UI-UX-AUDIT.md) for the detailed findings
+and verification limits.
+
 Upload the contents of `dist/public` to `public_html`. Store configuration,
 SQLite and sessions **outside** the web root; preserve server uploads on future
 releases. No persistent Node process or paid CMS/storage service is needed.
+
+For a UI-only release, run `pnpm build` again and upload only the refreshed
+contents of `dist/public`. Do not upload local private settings, SQLite files or
+sessions, and do not overwrite the server's persistent `uploads` directory.
 
 ## Documentation
 
 - [XServer deployment, migration and operation](docs/XSERVER.md)
 - [Implementation and validation](docs/IMPLEMENTATION.md)
+- [UI/UX and responsive audit](docs/UI-UX-AUDIT.md)
 - [Historical README (previous Manus/Node runtime)](docs/LEGACY-README.md)
 
 Bookmark `/admin` for owner access. Its URL is intentionally absent from the

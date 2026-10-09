@@ -85,6 +85,6 @@ export default function RichTextEditor({ value, onChange, label = "本文" }: Ri
     </div>
     <p className="editor-image-help">画像の説明は公開ページの代替テキストとして保存されます。装飾目的の画像は空欄のまま挿入できます。</p>
     {imageStatus && <p className={upload.error || imageStatus.includes("してください") || imageStatus.includes("できません") ? "editor-image-error" : "editor-image-status"}>{imageStatus}</p>}
-    <div ref={editorRef} className="rich-editor" contentEditable suppressContentEditableWarning onMouseUp={rememberSelection} onKeyUp={rememberSelection} onFocus={rememberSelection} onInput={event => { onChange(event.currentTarget.innerHTML); rememberSelection(); }} data-placeholder="ここに記事本文を書いてね…" />
+    <div ref={editorRef} className="rich-editor" role="textbox" aria-label={label} aria-multiline="true" contentEditable suppressContentEditableWarning onMouseUp={rememberSelection} onKeyUp={rememberSelection} onFocus={rememberSelection} onInput={event => { onChange(event.currentTarget.innerHTML); rememberSelection(); }} data-placeholder="ここに記事本文を書いてね…" />
   </div>;
 }

@@ -14,7 +14,8 @@
     "dev:api": "node scripts/start-php.mjs dev",
     "test:php": "php xserver/tests/run.php",
     "test:xserver": "node scripts/test-xserver.mjs",
-    "test:browser": "node scripts/browser-xserver.mjs"
+    "test:browser": "node scripts/browser-xserver.mjs",
+    "test:responsive": "node scripts/browser-responsive.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1113.0",

@@ -17,6 +17,7 @@
 @import "./gallery-image-viewer.css";
 @import "./admin-batch-shared-metadata.css";
 @import "./profile.css";
+@import "./portfolio-ui.css";
 
 @custom-variant dark (&:is(.dark *));
 
