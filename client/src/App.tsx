@@ -7,6 +7,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
 const Admin = lazy(() => import("./pages/Admin"));
+const Visitor = lazy(() => import("./pages/Visitor"));
 const About = lazy(() => import("./pages/About"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
@@ -29,6 +30,7 @@ function Router() {
       <Route path={"/blog"} component={Blog} />
       <Route path={"/blog/:slug"} component={BlogPost} />
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/visitor"} component={Visitor} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

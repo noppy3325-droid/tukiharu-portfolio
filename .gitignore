@@ -112,3 +112,12 @@ temp/
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
 .project-config.json
+# XServer private data, local QA tools, exports and deployment builds
+.tools/
+xserver/portfolio-private/
+dist/
+*.sqlite
+*.sqlite-*
+*.export.json
+xserver/public/uploads/*
+!xserver/public/uploads/.htaccess
