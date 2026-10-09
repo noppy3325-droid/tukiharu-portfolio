@@ -1,10 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
+import { defaultProfile } from "../shared/profile";
 
 const dbMock = vi.hoisted(() => ({
   listWorks: vi.fn(), listBooks: vi.fn(), listGalleryItems: vi.fn(), createWork: vi.fn(), createBook: vi.fn(), createGalleryItem: vi.fn(),
-  getSiteSettings: vi.fn(), setSiteIntroduction: vi.fn(),
+  getSiteSettings: vi.fn(), setSiteProfile: vi.fn(),
   listPublishedPosts: vi.fn(), getAdjacentPublishedPosts: vi.fn(), getLikeCount: vi.fn(), addLike: vi.fn(), removeLike: vi.fn(),
   getPublishedPostById: vi.fn(), addComment: vi.fn(), listComments: vi.fn(), deleteCommentByAuthor: vi.fn(), restoreCommentByAuthor: vi.fn(), updateCommentByAuthorWithinWindow: vi.fn(),
 }));
@@ -29,14 +30,15 @@ describe("コンテンツと権限のAPI", () => {
   });
 
   it("自己紹介は公開取得でき、管理者セッションだけが保存できる", async () => {
-    const profile = { id: 1, introduction: "公開する自己紹介", updatedAt: null };
+    const profile = { ...defaultProfile, introduction: "公開する自己紹介" };
     dbMock.getSiteSettings.mockResolvedValue(profile);
-    dbMock.setSiteIntroduction.mockResolvedValue({ success: true });
+    dbMock.setSiteProfile.mockResolvedValue({ success: true });
     const publicCaller = appRouter.createCaller(context(null));
     await expect(publicCaller.content.profile.get()).resolves.toEqual(profile);
-    await expect(appRouter.createCaller(context("user")).admin.content.profile.update({ introduction: "変更後の自己紹介" })).rejects.toMatchObject({ code: "FORBIDDEN" } satisfies Partial<TRPCError>);
-    await expect(appRouter.createCaller(context(null, true)).admin.content.profile.update({ introduction: "変更後の自己紹介" })).resolves.toEqual({ success: true });
-    expect(dbMock.setSiteIntroduction).toHaveBeenCalledWith("変更後の自己紹介");
+    const updated = { ...profile, introduction: "変更後の自己紹介" };
+    await expect(appRouter.createCaller(context("user")).admin.content.profile.update(updated)).rejects.toMatchObject({ code: "FORBIDDEN" } satisfies Partial<TRPCError>);
+    await expect(appRouter.createCaller(context(null, true)).admin.content.profile.update(updated)).resolves.toEqual({ success: true });
+    expect(dbMock.setSiteProfile).toHaveBeenCalledWith(updated);
   });
 
   it("一般ユーザーはオーナー専用コンテンツAPIを呼び出せない", async () => {

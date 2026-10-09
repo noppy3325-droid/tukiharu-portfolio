@@ -13,6 +13,7 @@ export default defineConfig({
     },
   },
   test: {
+    setupFiles: [path.resolve(templateRoot, "server/testSetup.ts")],
     environment: "node",
     include: ["server/**/*.test.ts", "server/**/*.spec.ts", "client/**/*.test.ts", "client/**/*.spec.ts", "client/**/*.test.tsx", "client/**/*.spec.tsx"],
   },
