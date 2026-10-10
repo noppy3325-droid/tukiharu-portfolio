@@ -217,6 +217,10 @@ body::before {
   aspect-ratio: 1;
   border-radius: var(--ui-radius);
 }
+/* Home shows only one row; hidden links are also removed from keyboard focus. */
+.gallery-home-grid .gallery-card:nth-child(n + 2) {
+  display: none;
+}
 .gallery-grid .gallery-thumb :is(img, svg) {
   position: absolute;
   inset: 0;
@@ -713,12 +717,18 @@ body::before {
 }
 
 @media (min-width: 360px) {
+  .gallery-home-grid .gallery-card:nth-child(2) {
+    display: block;
+  }
   .gallery-grid,
   .gallery-shell .tsuki-photo-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (min-width: 768px) {
+  .gallery-home-grid .gallery-card:nth-child(3) {
+    display: block;
+  }
   .gallery-header {
     min-height: 100px;
   }
@@ -810,6 +820,9 @@ body::before {
   }
 }
 @media (min-width: 1200px) {
+  .gallery-home-grid .gallery-card:nth-child(4) {
+    display: block;
+  }
   .gallery-grid,
   .gallery-shell .tsuki-photo-list {
     grid-template-columns: repeat(4, minmax(0, 1fr));

@@ -152,3 +152,24 @@ and CSS moon mark. Its viewBox removes unused surrounding space while preserving
 the artwork. The image scales from 144px to 184px, keeps its aspect ratio and
 retains a descriptive accessible name and the existing Home link. Importing it
 through Vite includes the SVG in the versioned production assets.
+
+## One-row Home archive — 2026-10-10
+
+Home previously combined categories by update time and displayed up to 12 cards.
+It now selects each category's newest entry before selecting another entry from
+that category, producing at most four previews. The existing grid breakpoints
+show 1/2/3/4 cards at below 360/from 360/from 768/from 1200px, respectively.
+CSS uses `display: none` for remaining previews, keeping both layout and keyboard
+focus to one row. Category pages retain their full lists, and the lower latest
+updates list retains its chronological ordering independently of the preview.
+
+TypeScript, the production build, all 94 Vitest tests in 26 files and the new
+category selection tests passed. Chrome verified 320/359/360/375/430/767/768/
+1024/1199/1200/1440px, resizing, category balance, sparse/empty data, keyboard
+visibility and unchanged recent updates using mocked public API reads.
+Screenshots are in ignored `.tools/home-row-verified`.
+
+The local PHP executable was blocked by Windows application control policy.
+Consequently the PHP-backed full responsive suite could not be rerun for this
+revision; its existing script now also checks Home's card count and row alignment.
+The frontend browser checks do not verify PHP, persistence or production data.

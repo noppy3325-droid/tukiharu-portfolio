@@ -1,5 +1,5 @@
 import { TsukiLayout } from "@/components/TsukiLayout";
-import { buildHomeUpdates } from "@/lib/homeUpdates";
+import { buildHomePreview, buildHomeUpdates } from "@/lib/homeUpdates";
 import { trpc } from "@/lib/trpc";
 import { useEffect } from "react";
 import { Link } from "wouter";
@@ -129,7 +129,8 @@ export default function Home() {
       updatedAt: item.updatedAt,
       kind: "note" as const,
     })),
-  ]).slice(0, 12);
+  ]);
+  const previewEntries = buildHomePreview(entries);
   const loading =
     works.isLoading || books.isLoading || photos.isLoading || notes.isLoading;
   const loadError =
@@ -147,11 +148,11 @@ export default function Home() {
         <p>
           作品、写真、読書、Blog。
           <br />
-          最近の公開から。
+          各カテゴリの最近の記録から。
           <ArrowDown size={16} aria-hidden="true" />
         </p>
       </section>
-      <section className="gallery-grid" aria-label="公開コンテンツ">
+      <section className="gallery-grid gallery-home-grid" aria-label="公開コンテンツ">
         {loading ? (
           <p className="gallery-state" role="status">
             作品を読み込んでいます。
@@ -160,8 +161,8 @@ export default function Home() {
           <p className="gallery-state" role="alert">
             作品を取得できませんでした。
           </p>
-        ) : entries.length ? (
-          entries.map(entry => (
+        ) : previewEntries.length ? (
+          previewEntries.map(entry => (
             <Link href={entry.href} className="gallery-card" key={entry.id}>
               <div className={`gallery-thumb gallery-thumb-${entry.kind}`}>
                 {entry.imageUrl ? (

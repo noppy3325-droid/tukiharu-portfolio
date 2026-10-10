@@ -212,6 +212,22 @@ try {
     for (const route of routes) {
       await page.goto(base + route);
       await ready();
+      if (route === "/") {
+        const archive = await page.locator(".gallery-home-grid").evaluate(e => {
+          const cards = [...e.querySelectorAll(".gallery-card")];
+          const visible = cards.filter(card => card.checkVisibility());
+          return {
+            total: cards.length,
+            tops: visible.map(card => card.getBoundingClientRect().top),
+            kinds: visible.map(card => card.querySelector(".portfolio-card-kind").textContent.trim()),
+          };
+        });
+        const columns = width >= 1200 ? 4 : width >= 768 ? 3 : width >= 360 ? 2 : 1;
+        assert(archive.total <= 4, "Home archive keeps a maximum of four previews");
+        assert.equal(archive.tops.length, Math.min(columns, archive.total), "Home archive fills only one row");
+        assert(archive.tops.every(top => Math.abs(top - archive.tops[0]) < 1), "Home cards align in a single row");
+        assert.equal(new Set(archive.kinds).size, archive.kinds.length, "QA fixture shows distinct categories in the Home row");
+      }
       const name = route === "/" ? "home" : route.replaceAll("/", "-").slice(1);
       await inspect(name, width);
       if (route.startsWith("/blog/")) {
