@@ -94,18 +94,35 @@ function safeUrl(string $url, bool $local = true, bool $mailto = false): bool {
 function urlValue(array $input, string $key, bool $local = true): string { $value = textValue($input,$key,2048); if (!safeUrl($value,$local)) fail($key . 'はHTTPSまたはアップロード済みURLを入力してください。'); return $value; }
 function idValue(array $input): int { $id = $input['id'] ?? 0; if (!is_int($id) || $id < 1) fail('IDを確認してください。'); return $id; }
 function defaultProfile(): array { return ['introduction'=>'つくったもの、写真、読んだもの、日々の記録をまとめています。','name'=>'月春','headline'=>'つくる、撮る、日々を残す。','avatarUrl'=>'','about'=>'','githubUrl'=>'','xUrl'=>'','skills'=>[],'interests'=>[],'personal'=>[],'devices'=>[],'music'=>[],'activities'=>[],'links'=>[]]; }
+function publicProfile(): array {
+    $stored = setting('profile', []);
+    $profile = array_replace(defaultProfile(), $stored);
+    // Only supply the curated library for an empty, not-yet-configured field.
+    // An intentional empty list saved in the editor remains empty thereafter.
+    if (!$profile['music'] && !($stored['_musicLibraryInitialized'] ?? false)) {
+        $library = json_decode(file_get_contents(__DIR__ . '/music-library.json'), true, 64, JSON_THROW_ON_ERROR);
+        $profile['music'] = $library;
+    }
+    unset($profile['_musicLibraryInitialized']);
+    return $profile;
+}
 function profileInput(array $input): array {
     $result = [];
     foreach (['name'=>160,'headline'=>300,'introduction'=>3000,'about'=>12000] as $key=>$max) $result[$key] = textValue($input,$key,$max,in_array($key,['name','introduction']));
     foreach (['avatarUrl','githubUrl','xUrl'] as $key) $result[$key] = urlValue($input,$key,$key === 'avatarUrl');
-    foreach (['skills'=>60,'personal'=>30,'interests'=>20,'devices'=>20,'music'=>40,'activities'=>200,'links'=>30] as $key=>$max) {
+    foreach (['skills'=>60,'personal'=>30,'interests'=>20,'devices'=>20,'music'=>200,'activities'=>200,'links'=>30] as $key=>$max) {
         $values = $input[$key] ?? []; if (!is_array($values) || !array_is_list($values) || count($values)>$max) fail($key . 'の項目数を確認してください。');
         $result[$key] = [];
         foreach ($values as $value) {
             if (in_array($key,['skills','personal'])) { $v = textValue(['value'=>$value],'value',$key === 'skills' ? 100 : 3000); if ($v !== '') $result[$key][]=$v; continue; }
             if (!is_array($value)) fail($key . 'の形式を確認してください。');
-            $fields = match($key) { 'interests'=>['category'], 'devices'=>['name','os','cpu','memory','storage','software'], 'music'=>['title','artist','genre','note'], 'activities'=>['id','date','title','description'], 'links'=>['label'] };
+            $fields = match($key) { 'interests'=>['category'], 'devices'=>['name','os','cpu','memory','storage','software','specifications','note'], 'music'=>['title','artist','genre','note'], 'activities'=>['id','date','title','description'], 'links'=>['label'] };
             $row=[]; foreach($fields as $f) $row[$f]=textValue($value,$f, in_array($f,['id','date']) ? 100 : 3000, in_array($f,['title','label','date','id']));
+            if ($key === 'devices') {
+                $category = $value['category'] ?? 'computer';
+                if (!is_string($category) || !in_array($category,['computer','smartphone','tablet','audio','camera','other'],true)) fail('機材の種類を確認してください。');
+                $row['category'] = $category;
+            }
             $urls = match($key) { 'devices'=>['imageUrl'], 'music'=>['artworkUrl','url'], 'activities','links'=>['url'], default=>[] };
             foreach($urls as $f) $row[$f]=urlValue($value,$f,in_array($f,['imageUrl','artworkUrl']));
             if ($key === 'links' && $row['url'] === '') fail('リンクURLを入力してください。');
@@ -150,16 +167,20 @@ function sanitizedHtml(string $html): string {
 }
 function recordInput(string $kind, array $input): array {
     $r=['title'=>textValue($input,'title',$kind==='posts'?200:180,true)];
-    $fields=match($kind){'works'=>['summary'=>2000,'category'=>80,'accent'=>30],'books'=>['author'=>160,'note'=>2000,'coverColor'=>30],'gallery'=>['caption'=>2000,'camera'=>180,'lens'=>180,'location'=>240],'posts'=>['slug'=>220,'excerpt'=>1000,'content'=>20000,'coverColor'=>30]};
+    $fields=match($kind){'works'=>['summary'=>2000,'category'=>80,'accent'=>30],'books'=>['author'=>160,'note'=>2000,'coverColor'=>30,'publisher'=>180,'publishedDate'=>40,'isbn'=>32,'pageCount'=>8,'description'=>6000,'googleBooksId'=>128],'gallery'=>['caption'=>2000,'camera'=>180,'lens'=>180,'location'=>240,'focalLength'=>80,'aperture'=>80,'shutterSpeed'=>80,'iso'=>80],'posts'=>['slug'=>220,'excerpt'=>1000,'content'=>20000,'coverColor'=>30]};
     foreach($fields as $key=>$max)$r[$key]=textValue($input,$key,$max,in_array($key,['summary','category','author','note','caption','slug','excerpt','content']));
     $urls=match($kind){'works'=>['url','thumbnailUrl','pdfUrl'],'books'=>['coverImageUrl'],'gallery'=>['imageUrl'],'posts'=>[]};
     foreach($urls as $key)$r[$key]=urlValue($input,$key,$key!=='url');
     if($kind==='works' && $r['pdfUrl']!=='' && !preg_match('~^/uploads/[a-f0-9]{32,64}\.pdf$~D',$r['pdfUrl']))fail('アップロードしたPDFを選択してください。');
+    if($kind==='books') {
+        if($r['googleBooksId']!=='' && !preg_match('/^[A-Za-z0-9_-]{1,128}$/D',$r['googleBooksId']))fail('書籍IDを確認してください。');
+        if($r['pageCount']!=='' && !preg_match('/^[0-9]{1,6}$/D',$r['pageCount']))fail('ページ数を確認してください。');
+    }
     if($kind==='gallery') {
         if(!$r['imageUrl'])fail('画像を選択してください。');
         $r['rotation']=$input['rotation']??0;if(!is_int($r['rotation']) || abs($r['rotation'])>20)fail('回転角度を確認してください。');
         $r['takenAt']=$input['takenAt']??null;if($r['takenAt']!==null && (!is_string($r['takenAt']) || strtotime($r['takenAt'])===false))fail('撮影日を確認してください。');
-        foreach(['camera','lens','location'] as $key)if($r[$key]==='')$r[$key]=null;
+        foreach(['camera','lens','location','focalLength','aperture','shutterSpeed','iso'] as $key)if($r[$key]==='')$r[$key]=null;
     }
     if($kind==='posts') {
         if(!preg_match('/^[a-z0-9-]+$/D',$r['slug']))fail('スラッグは半角英数字とハイフンを使用してください。');

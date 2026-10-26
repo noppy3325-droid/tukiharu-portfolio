@@ -6,6 +6,14 @@ import { AdminImageUpload } from "./AdminImageUpload";
 import { trpc } from "@/lib/trpc";
 import { defaultProfile, type Profile } from "@shared/profile";
 import { profileSchema } from "@shared/profileSchema";
+import {
+  deviceCategories,
+  deviceCategoryLabels,
+  deviceCategoryOf,
+  deviceSpecsLabels,
+  hasComputingSpecs,
+  type DeviceCategory,
+} from "@shared/devices";
 
 const lines = (text: string) =>
   text
@@ -126,8 +134,6 @@ export function ProfileEditor() {
         e.preventDefault();
         const parsed = profileSchema.safeParse({
           ...p,
-          skills: lines(p.skills.join("\n")),
-          personal: lines(p.personal.join("\n")),
           interests: p.interests.map(v => ({
             ...v,
             items: lines(v.items.join("\n")),
@@ -164,18 +170,6 @@ export function ProfileEditor() {
         {field("githubUrl", "GitHub URL")}
         {field("xUrl", "X URL")}
       </div>
-      <Field label="Skills（1行に1項目）">
-        <Textarea
-          value={p.skills.join("\n")}
-          onChange={e => patch({ skills: e.target.value.split("\n") })}
-        />
-      </Field>
-      <Field label="Personal / 特徴（1行に1項目）">
-        <Textarea
-          value={p.personal.join("\n")}
-          onChange={e => patch({ personal: e.target.value.split("\n") })}
-        />
-      </Field>
       <Group
         title="Interests / 好きなもの"
         onAdd={() =>
@@ -218,12 +212,13 @@ export function ProfileEditor() {
         ))}
       </Group>
       <Group
-        title="PC Environment / パソコン環境"
+        title="Gear / 使用機材"
         onAdd={() =>
           patch({
             devices: [
               ...p.devices,
               {
+                category: "computer",
                 name: "",
                 imageUrl: "",
                 os: "",
@@ -231,6 +226,8 @@ export function ProfileEditor() {
                 memory: "",
                 storage: "",
                 software: "",
+                specifications: "",
+                note: "",
               },
             ],
           })
@@ -244,6 +241,27 @@ export function ProfileEditor() {
               patch({ devices: p.devices.filter((_, j) => j !== i) })
             }
           >
+            <Field label="機材の種類">
+              <select
+                aria-label="機材の種類"
+                value={deviceCategoryOf(v.category)}
+                onChange={e =>
+                  patch({
+                    devices: p.devices.map((r, j) =>
+                      j === i
+                        ? { ...r, category: e.target.value as DeviceCategory }
+                        : r
+                    ),
+                  })
+                }
+              >
+                {deviceCategories.map(category => (
+                  <option key={category} value={category}>
+                    {deviceCategoryLabels[category]}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <AdminImageUpload
               scope="works"
               value={v.imageUrl}
@@ -257,90 +275,130 @@ export function ProfileEditor() {
             />
             {(
               [
-                ["name", "名前"],
+                ["name", "名前・機種名"],
                 ["os", "OS"],
                 ["cpu", "CPU"],
                 ["memory", "メモリ"],
                 ["storage", "ストレージ"],
-                ["software", "ソフトウェア・開発環境"],
+                ["software", "ソフトウェア・アプリ"],
               ] as const
-            ).map(([key, label]) => (
-              <Field key={key} label={label}>
-                <Input
-                  value={v[key]}
-                  onChange={e =>
-                    patch({
-                      devices: p.devices.map((r, j) =>
-                        j === i ? { ...r, [key]: e.target.value } : r
-                      ),
-                    })
-                  }
-                />
-              </Field>
-            ))}
+            )
+              .filter(
+                ([key]) =>
+                  key === "name" ||
+                  hasComputingSpecs(deviceCategoryOf(v.category))
+              )
+              .map(([key, label]) => (
+                <Field key={key} label={label}>
+                  <Input
+                    value={v[key]}
+                    onChange={e =>
+                      patch({
+                        devices: p.devices.map((r, j) =>
+                          j === i ? { ...r, [key]: e.target.value } : r
+                        ),
+                      })
+                    }
+                  />
+                </Field>
+              ))}
+            <Field label={deviceSpecsLabels[deviceCategoryOf(v.category)]}>
+              <Textarea
+                rows={3}
+                value={v.specifications ?? ""}
+                onChange={e =>
+                  patch({
+                    devices: p.devices.map((r, j) =>
+                      j === i ? { ...r, specifications: e.target.value } : r
+                    ),
+                  })
+                }
+              />
+            </Field>
+            <Field label="用途・使い心地（任意）">
+              <Textarea
+                rows={3}
+                value={v.note ?? ""}
+                onChange={e =>
+                  patch({
+                    devices: p.devices.map((r, j) =>
+                      j === i ? { ...r, note: e.target.value } : r
+                    ),
+                  })
+                }
+              />
+            </Field>
           </Row>
         ))}
       </Group>
-      <Group
-        title="Music / 音楽"
-        onAdd={() =>
-          patch({
-            music: [
-              ...p.music,
-              {
-                title: "",
-                artist: "",
-                genre: "",
-                artworkUrl: "",
-                url: "",
-                note: "",
-              },
-            ],
-          })
-        }
-      >
-        {p.music.map((v, i) => (
-          <Row
-            key={i}
-            title={`音楽 ${i + 1}`}
-            onRemove={() => patch({ music: p.music.filter((_, j) => j !== i) })}
-          >
-            <AdminImageUpload
-              scope="works"
-              value={v.artworkUrl}
-              onChange={artworkUrl =>
-                patch({
-                  music: p.music.map((r, j) =>
-                    j === i ? { ...r, artworkUrl } : r
-                  ),
-                })
+      <details className="admin-profile-music">
+        <summary>
+          <span>Music / 音楽</span>
+          <span>{p.music.length}曲 · 開いて編集</span>
+        </summary>
+        <Group
+          title="登録済みの音楽"
+          onAdd={() =>
+            patch({
+              music: [
+                ...p.music,
+                {
+                  title: "",
+                  artist: "",
+                  genre: "",
+                  artworkUrl: "",
+                  url: "",
+                  note: "",
+                },
+              ],
+            })
+          }
+        >
+          {p.music.map((v, i) => (
+            <Row
+              key={i}
+              title={`音楽 ${i + 1}`}
+              onRemove={() =>
+                patch({ music: p.music.filter((_, j) => j !== i) })
               }
-            />
-            {(
-              [
-                ["title", "楽曲・ライブラリ名"],
-                ["artist", "アーティスト"],
-                ["genre", "ジャンル"],
-                ["url", "外部リンク"],
-                ["note", "音楽の趣味・活動・今聴いているもの"],
-              ] as const
-            ).map(([key, label]) => (
-              <Field key={key} label={label}>
-                <Input
-                  value={v[key]}
-                  onChange={e =>
-                    patch({
-                      music: p.music.map((r, j) =>
-                        j === i ? { ...r, [key]: e.target.value } : r
-                      ),
-                    })
-                  }
-                />
-              </Field>
-            ))}
-          </Row>
-        ))}
-      </Group>
+            >
+              <AdminImageUpload
+                scope="works"
+                value={v.artworkUrl}
+                onChange={artworkUrl =>
+                  patch({
+                    music: p.music.map((r, j) =>
+                      j === i ? { ...r, artworkUrl } : r
+                    ),
+                  })
+                }
+              />
+              {(
+                [
+                  ["title", "楽曲・ライブラリ名"],
+                  ["artist", "アーティスト"],
+                  ["genre", "ジャンル"],
+                  ["url", "外部リンク"],
+                  ["note", "音楽の趣味・活動・今聴いているもの"],
+                ] as const
+              ).map(([key, label]) => (
+                <Field key={key} label={label}>
+                  <Input
+                    value={v[key]}
+                    onChange={e =>
+                      patch({
+                        music: p.music.map((r, j) =>
+                          j === i ? { ...r, [key]: e.target.value } : r
+                        ),
+                      })
+                    }
+                  />
+                </Field>
+              ))}
+            </Row>
+          ))}
+        </Group>
+      </details>
       <Group
         title="Activity / 活動履歴"
         onAdd={() =>

@@ -1,23 +1,18 @@
 import { TsukiLayout } from "@/components/TsukiLayout";
 import { trpc } from "@/lib/trpc";
 import { TiltCard } from "@/components/TiltCard";
+import { MusicLibrary } from "@/components/MusicLibrary";
+import { DeviceCard } from "@/components/DeviceCard";
 import { defaultProfile } from "@shared/profile";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  Github,
-  Monitor,
-  Music2,
-  Sparkles,
-} from "lucide-react";
-import { useEffect } from "react";
+import { ArrowLeft, ArrowUpRight, Github } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+
+const BoardingPass = lazy(() => import("@/components/BoardingPass"));
 
 const profileSections = [
   { id: "about", label: "About", mobileLabel: "私について" },
-  { id: "skills", label: "Skills", mobileLabel: "できること" },
   { id: "interests", label: "Interests", mobileLabel: "好きなもの" },
-  { id: "personal", label: "Personal", mobileLabel: "こんな人です" },
-  { id: "pc-environment", label: "PC Environment", mobileLabel: "制作環境" },
+  { id: "pc-environment", label: "Gear", mobileLabel: "使用機材" },
   { id: "music", label: "Music", mobileLabel: "音楽" },
   { id: "activity", label: "Activity", mobileLabel: "活動のあしあと" },
   { id: "links", label: "Links", mobileLabel: "リンク" },
@@ -56,6 +51,14 @@ export default function About() {
     staleTime: 60_000,
   });
   const p = query.data ?? defaultProfile;
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [ticketLoaded, setTicketLoaded] = useState(false);
+  const ticketTrigger = useRef<HTMLButtonElement | null>(null);
+  const issueTicket = (event: React.MouseEvent<HTMLButtonElement>) => {
+    ticketTrigger.current = event.currentTarget;
+    setTicketLoaded(true);
+    setTicketOpen(true);
+  };
   useEffect(() => {
     document.title = `${p.name}について｜月春の資材置き場`;
   }, [p.name]);
@@ -79,16 +82,16 @@ export default function About() {
           </p>
         )}
         <TiltCard className="profile-header">
-          <div className="profile-avatar">
+          <button type="button" className="profile-avatar profile-ticket-trigger" aria-label={`${p.name}のアイコンからプロフィール搭乗券を発行`} aria-haspopup="dialog" onClick={issueTicket}>
             {p.avatarUrl ? (
               <img src={p.avatarUrl} alt={`${p.name}のプロフィール`} />
             ) : (
               <span aria-hidden="true">月</span>
             )}
-          </div>
+          </button>
           <div>
             <p className="gallery-section-label">HELLO, I'M</p>
-            <h1>{p.name}</h1>
+            <h1><button type="button" className="profile-ticket-name" aria-label={`${p.name}のプロフィール搭乗券を発行`} aria-haspopup="dialog" onClick={issueTicket}>{p.name}<span>搭乗券を発行 <ArrowUpRight size={13} aria-hidden="true" /></span></button></h1>
             <p className="profile-headline">{p.headline}</p>
             <p className="profile-introduction">{p.introduction}</p>
             <div className="profile-socials">
@@ -100,6 +103,7 @@ export default function About() {
             </div>
           </div>
         </TiltCard>
+        {ticketLoaded && <Suspense fallback={<p role="status">搭乗券を準備しています…</p>}><BoardingPass profile={p} open={ticketOpen} onOpenChange={setTicketOpen} returnFocus={() => ticketTrigger.current?.focus()} /></Suspense>}
         <nav className="profile-index" aria-label="自己紹介のセクション">
           {profileSections.map(section => (
             <a
@@ -125,20 +129,13 @@ export default function About() {
             ))}
           </nav>
         </details>
-        <div className="profile-columns">
-          <section id="about" className="profile-section">
-            <p className="gallery-section-label">01 / ABOUT</p>
-            <h2>私について</h2>
-            {p.about ? <p className="profile-prose">{p.about}</p> : <Empty />}
-          </section>
-          <section id="skills" className="profile-section">
-            <p className="gallery-section-label">02 / SKILLS</p>
-            <h2>できること、学んでいること</h2>
-            {p.skills.length ? <Tags values={p.skills} /> : <Empty />}
-          </section>
-        </div>
+        <section id="about" className="profile-section">
+          <p className="gallery-section-label">01 / ABOUT</p>
+          <h2>私について</h2>
+          {p.about ? <p className="profile-prose">{p.about}</p> : <Empty />}
+        </section>
         <section id="interests" className="profile-section">
-          <p className="gallery-section-label">03 / INTERESTS</p>
+          <p className="gallery-section-label">02 / INTERESTS</p>
           <h2>好きなもの</h2>
           <div className="interest-grid">
             {p.interests.map((item, i) => (
@@ -151,105 +148,24 @@ export default function About() {
           </div>
           {!p.interests.length && <Empty />}
         </section>
-        <section id="personal" className="profile-section">
-          <p className="gallery-section-label">04 / PERSONAL</p>
-          <h2>
-            <Sparkles size={21} />
-            こんな人です
-          </h2>
-          <ul className="personal-notes">
-            {p.personal.map((item, i) => (
-              <li key={i}>
-                <span>✦</span>
-                {item}
-              </li>
-            ))}
-          </ul>
-          {!p.personal.length && <Empty />}
-        </section>
         <section id="pc-environment" className="profile-section">
-          <p className="gallery-section-label">05 / PC ENVIRONMENT</p>
-          <h2>日々の制作環境</h2>
+          <p className="gallery-section-label">03 / GEAR</p>
+          <h2>使っている機材</h2>
           <div className="device-grid">
             {p.devices.map((device, i) => (
-              <article className="device-panel" key={i}>
-                <div className="device-visual">
-                  {device.imageUrl ? (
-                    <img
-                      loading="lazy"
-                      src={device.imageUrl}
-                      alt={device.name}
-                    />
-                  ) : (
-                    <Monitor size={64} strokeWidth={1} />
-                  )}
-                </div>
-                <div className="device-copy">
-                  <p className="device-status">
-                    MY WORKSPACE / {String(i + 1).padStart(2, "0")}
-                  </p>
-                  <h3>{device.name}</h3>
-                  <dl>
-                    {[
-                      ["OS", device.os],
-                      ["CPU", device.cpu],
-                      ["MEMORY", device.memory],
-                      ["STORAGE", device.storage],
-                    ]
-                      .filter(([, value]) => value)
-                      .map(([key, value]) => (
-                        <div key={key}>
-                          <dt>{key}</dt>
-                          <dd>{value}</dd>
-                        </div>
-                      ))}
-                  </dl>
-                  {device.software && (
-                    <p className="device-software">{device.software}</p>
-                  )}
-                </div>
-              </article>
+              <DeviceCard key={i} device={device} index={i} />
             ))}
           </div>
           {!p.devices.length && <Empty />}
         </section>
         <section id="music" className="profile-section">
-          <p className="gallery-section-label">06 / MUSIC</p>
+          <p className="gallery-section-label">04 / MUSIC</p>
           <h2>日々に流れる音楽</h2>
-          <div className="music-library">
-            {p.music.map((item, i) => (
-              <article className="music-record" key={i}>
-                <div className="music-artwork">
-                  {item.artworkUrl ? (
-                    <img
-                      loading="lazy"
-                      src={item.artworkUrl}
-                      alt={`${item.title}のジャケット`}
-                    />
-                  ) : (
-                    <Music2 size={40} />
-                  )}
-                </div>
-                <div>
-                  <small>{item.genre}</small>
-                  <h3>{item.title}</h3>
-                  <p>{item.artist}</p>
-                  {item.note && <p className="music-note">{item.note}</p>}
-                  <External href={item.url}>楽曲・ライブラリを開く</External>
-                </div>
-                <span className="music-bars" aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                </span>
-              </article>
-            ))}
-          </div>
+          <MusicLibrary items={p.music} />
           {!p.music.length && <Empty />}
         </section>
         <section id="activity" className="profile-section">
-          <p className="gallery-section-label">07 / ACTIVITY</p>
+          <p className="gallery-section-label">05 / ACTIVITY</p>
           <h2>活動のあしあと</h2>
           <ol className="activity-timeline">
             {activity.map(item => (
@@ -268,7 +184,7 @@ export default function About() {
           {!activity.length && <Empty />}
         </section>
         <section id="links" className="profile-section">
-          <p className="gallery-section-label">08 / LINKS</p>
+          <p className="gallery-section-label">06 / LINKS</p>
           <h2>ほかの場所でも</h2>
           <div className="profile-links">
             {[
@@ -284,6 +200,12 @@ export default function About() {
               ))}
           </div>
         </section>
+        <aside className="profile-privacy" aria-labelledby="profile-privacy-title">
+          <h2 id="profile-privacy-title">搭乗券とプライバシーについて</h2>
+          <p>プロフィール搭乗券を開いたときだけ、接続元のIPアドレスを<a href="https://ipwhois.io/" target="_blank" rel="noopener noreferrer">IPWhois</a>へ送信し、おおよその都市・地域を取得します。GPSによる現在地の取得は行いません。</p>
+          <p>取得した地域は搭乗券の出発地表示だけに使い、広告・アクセス解析など、ほかの目的には利用しません。この機能から、IPWhois以外の第三者へIPアドレスや取得した地域を提供することもありません。</p>
+          <p>再照会を減らすため、取得した地域を非公開のセッション内に一時的に保持します。取得した地域をプロフィールや投稿として保存することはありません。推定した地域は、VPNや通信回線によって実際の場所と異なる場合があります。</p>
+        </aside>
       </div>
     </TsukiLayout>
   );

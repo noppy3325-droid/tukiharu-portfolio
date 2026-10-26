@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { deviceCategories } from "./devices";
 const text = z.string().trim().max(3000);
 const url = z
   .string()
@@ -33,11 +34,14 @@ export const profileSchema = z.object({
       z.object({
         name: text.max(160),
         imageUrl: url,
-        os: text,
-        cpu: text,
-        memory: text,
-        storage: text,
-        software: text,
+        category: z.enum(deviceCategories).default("computer"),
+        os: text.default(""),
+        cpu: text.default(""),
+        memory: text.default(""),
+        storage: text.default(""),
+        software: text.default(""),
+        specifications: text.default(""),
+        note: text.default(""),
       })
     )
     .max(20),
@@ -52,7 +56,7 @@ export const profileSchema = z.object({
         note: text,
       })
     )
-    .max(40),
+    .max(200),
   activities: z
     .array(
       z.object({

@@ -1,0 +1,122 @@
+.listening-caption {
+  color: #486878;
+  font-size: 0.85rem;
+  line-height: 1.8;
+  margin: 0 0 20px;
+}
+.listening-artists {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 32px;
+  align-items: start;
+}
+.listening-artist {
+  min-width: 0;
+  border-top: 1px solid #c6dbe4;
+}
+.listening-artist summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 18px 4px;
+  min-height: 64px;
+  list-style: none;
+}
+.listening-artist summary::-webkit-details-marker {
+  display: none;
+}
+.listening-artist-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 4px;
+}
+.listening-artist-name {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  color: #284d5e;
+}
+.listening-preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: #486878;
+}
+.listening-count {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: #486878;
+}
+.listening-artist summary > svg {
+  flex-shrink: 0;
+  color: #486878;
+}
+.listening-artist[open] summary > svg {
+  transform: rotate(180deg);
+}
+.listening-artist summary:hover {
+  background: #eaf3f7;
+}
+.listening-artist summary:focus-visible,
+.listening-tracks a:focus-visible {
+  outline: 2px solid #315a71;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.listening-tracks {
+  list-style: none;
+  padding: 0 4px 18px;
+  margin: 0;
+}
+.listening-tracks li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  border-top: 1px solid #dce9ef;
+  padding: 12px 0;
+}
+.listening-track-copy {
+  flex: 1 1 170px;
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+.listening-title {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #284d5e;
+  overflow-wrap: anywhere;
+}
+.listening-note {
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: #486878;
+  overflow-wrap: anywhere;
+}
+.listening-tracks a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 44px;
+  font-size: 0.75rem;
+  color: #315a71;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.listening-artwork {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+@media (min-width: 768px) {
+  .listening-artists {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

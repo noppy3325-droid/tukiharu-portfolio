@@ -1,19 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { acceptedImageMimeTypes, compressImageForUpload, formatImageBytes, imageOptimizationModeLabels, readFileAsBase64, type CompressedImage, type ImageOptimizationMode, validateImageSelection } from "@/lib/imageUpload";
 import { trpc } from "@/lib/trpc";
+import { readPhotoMetadata, type PhotoMetadata } from "@/lib/photoMetadata";
+import { galleryDetailSummary } from "@/lib/galleryDetails";
 import { ImagePlus, LoaderCircle, Upload, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
 type AdminImageUploadProps = {
   value: string;
   onChange: (url: string) => void;
-  onUploadComplete?: (result: { url: string; filename: string }) => void;
-  scope?: "gallery" | "works" | "books" | "blog";
+  onUploadComplete?: (result: { url: string; filename: string; metadata: PhotoMetadata }) => void;
+  scope?: "gallery" | "works" | "blog";
 };
 
 export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "gallery" }: AdminImageUploadProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const selectionVersion = useRef(0);
+  const uploadMetadata = useRef<PhotoMetadata>({});
+  const [metadata, setMetadata] = useState<PhotoMetadata>({});
   const [selectedImage, setSelectedImage] = useState<CompressedImage | null>(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const [selectionError, setSelectionError] = useState<string | null>(null);
@@ -22,7 +27,7 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
   const upload = trpc.admin.content.upload.image.useMutation({
     onSuccess: (result, variables) => {
       onChange(result.url);
-      onUploadComplete?.({ url: result.url, filename: variables.filename });
+      onUploadComplete?.({ url: result.url, filename: variables.filename, metadata: uploadMetadata.current });
       setSelectedImage(null);
       setLocalPreviewUrl(result.url);
       setSelectionError(null);
@@ -34,7 +39,9 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
     if (localPreviewUrl?.startsWith("blob:")) URL.revokeObjectURL(localPreviewUrl);
   }, [localPreviewUrl]);
   useEffect(() => {
+    selectionVersion.current += 1;
     setSelectedImage(null);
+    setMetadata({});
     setLocalPreviewUrl(null);
     setSelectionError(null);
     if (inputRef.current) inputRef.current.value = "";
@@ -45,6 +52,9 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
   const selectFile = async (file: File | undefined) => {
     setSelectionError(null);
     if (!file) return;
+    const version = ++selectionVersion.current;
+    setSelectedImage(null);
+    setMetadata({});
     const validationError = validateImageSelection(file);
     if (validationError) {
       setSelectedImage(null);
@@ -54,14 +64,18 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
 
     setIsCompressing(true);
     try {
+      const extracted = scope === "gallery" ? await readPhotoMetadata(file) : {};
       const compressedImage = await compressImageForUpload(file, optimizationMode);
+      if (version !== selectionVersion.current) return;
+      setMetadata(extracted);
       setSelectedImage(compressedImage);
       setLocalPreviewUrl(URL.createObjectURL(compressedImage.file));
     } catch (error) {
+      if (version !== selectionVersion.current) return;
       setSelectedImage(null);
       setSelectionError(error instanceof Error ? error.message : "画像を圧縮できませんでした。");
     } finally {
-      setIsCompressing(false);
+      if (version === selectionVersion.current) setIsCompressing(false);
     }
   };
 
@@ -69,6 +83,7 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
     if (!selectedImage) return;
     try {
       const base64 = await readFileAsBase64(selectedImage.file);
+      uploadMetadata.current = metadata;
       upload.mutate({
         filename: selectedImage.file.name,
         mimeType: selectedImage.file.type as (typeof acceptedImageMimeTypes)[number],
@@ -81,7 +96,9 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
   };
 
   const clearSelectedFile = () => {
+    selectionVersion.current += 1;
     setSelectedImage(null);
+    setMetadata({});
     setLocalPreviewUrl(null);
     setSelectionError(null);
     if (inputRef.current) inputRef.current.value = "";
@@ -93,7 +110,7 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
       <p>JPEG・PNG・WebPの元画像は20MBまで。画像ごとに画質と容量の優先度を選べます。元画像より大きい変換結果は使わず、SafariなどでWebPにできないJPEGはJPEGへ安全に変換します。</p>
     </div>
     <div className="admin-image-upload-actions">
-      <input ref={inputRef} id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => void selectFile(event.target.files?.[0])} />
+      <input ref={inputRef} id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" disabled={isCompressing || upload.isPending} onChange={event => void selectFile(event.target.files?.[0])} />
       <label className="admin-image-select" htmlFor={inputId}><ImagePlus size={16} />ファイルを選ぶ</label>
       <label className="admin-image-optimization" htmlFor={`${inputId}-optimization`}><span>最適化</span><select id={`${inputId}-optimization`} value={optimizationMode} onChange={event => setOptimizationMode(event.target.value as ImageOptimizationMode)} disabled={isCompressing || upload.isPending}>{Object.entries(imageOptimizationModeLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
       <span>{isCompressing ? "画像を圧縮中…" : selectedImage ? `${selectedImage.file.name}（${formatImageBytes(selectedImage.compressedBytes)}）` : "ファイル未選択"}</span>
@@ -102,6 +119,7 @@ export function AdminImageUpload({ value, onChange, onUploadComplete, scope = "g
       </Button>
     </div>
     {previewUrl ? <div className="admin-image-preview"><img src={previewUrl} alt="選択した画像のプレビュー" /><div><strong>{localPreviewUrl?.startsWith("blob:") ? selectedImage?.keptOriginal ? "元画像を使用" : "最適化後のプレビュー" : "現在の画像"}</strong><span>{localPreviewUrl?.startsWith("blob:") && selectedImage ? selectedImage.keptOriginal ? <>元画像 {formatImageBytes(selectedImage.originalBytes)}をそのまま使用します（変換後の方が大きくなるため）</> : <>{imageOptimizationModeLabels[selectedImage.optimizationMode]}：元画像 {formatImageBytes(selectedImage.originalBytes)} → 最適化後 {formatImageBytes(selectedImage.compressedBytes)}（{selectedImage.width} × {selectedImage.height}px）</> : "アップロード後、または画像URL入力後にここへ表示されます。"}</span>{localPreviewUrl?.startsWith("blob:") && <Button type="button" variant="ghost" onClick={clearSelectedFile}><X size={15} />選択を取り消す</Button>}</div></div> : <div className="admin-image-preview admin-image-preview-empty"><ImagePlus size={21} /><span>{isCompressing ? "画像の最適化プレビューを準備しています…" : "ファイルを選択すると、最適化後のプレビューがここに表示されます。"}</span></div>}
+    {scope === "gallery" && selectedImage && <p className="admin-upload-metadata" role="status">{Object.keys(metadata).length ? `撮影情報：${galleryDetailSummary(metadata)}。アップロード後に詳細欄へ自動入力します。` : "撮影情報は見つかりませんでした。詳細は手動で入力できます。"}</p>}
     {selectionError && <p className="admin-login-error" role="alert">{selectionError}</p>}
     {upload.error && <p className="admin-login-error" role="alert">{upload.error.message || "画像をアップロードできませんでした。"}</p>}
     {upload.isSuccess && <p className="admin-save-success">サーバーへアップロードし、フォームへ画像URLを反映しました。続けてフォームの保存ボタンを押してください。</p>}

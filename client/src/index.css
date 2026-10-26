@@ -18,6 +18,8 @@
 @import "./admin-batch-shared-metadata.css";
 @import "./profile.css";
 @import "./portfolio-ui.css";
+@import "./music-library.css";
+@import "./boarding-pass.css";
 
 @custom-variant dark (&:is(.dark *));
 

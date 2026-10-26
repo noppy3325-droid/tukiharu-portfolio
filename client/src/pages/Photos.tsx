@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { TsukiLayout } from "@/components/TsukiLayout";
 import { PortfolioHeading } from "@/components/PortfolioHeading";
-import { hasGalleryDetails } from "@/lib/galleryDetails";
+import { galleryDetailSummary, hasGalleryDetails } from "@/lib/galleryDetails";
 import {
   Dialog,
   DialogContent,
@@ -11,13 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-function formatDate(date: Date | string | null) {
-  return date
-    ? new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium" }).format(
-        new Date(date)
-      )
-    : "";
-}
+
 
 export default function Photos() {
   const photos = trpc.content.gallery.list.useQuery(undefined, {
@@ -93,14 +87,7 @@ export default function Photos() {
                 <p>{photo.caption}</p>
                 {hasGalleryDetails(photo) && (
                   <small>
-                    {[
-                      photo.camera,
-                      photo.lens,
-                      photo.location,
-                      formatDate(photo.takenAt),
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                    {galleryDetailSummary(photo)}
                   </small>
                 )}
               </div>
@@ -146,7 +133,7 @@ export default function Photos() {
               </div>
               <div className="tsuki-gallery-image-caption">
                 <strong>{selectedPhoto.title}</strong>
-                <span>{selectedPhoto.caption}</span>
+                <span>{selectedPhoto.caption}</span>{hasGalleryDetails(selectedPhoto) && <small>{galleryDetailSummary(selectedPhoto)}</small>}
               </div>
             </>
           )}

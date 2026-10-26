@@ -7,24 +7,24 @@ import { ownerProcedure } from "./guards";
 import { storagePut } from "../storage";
 import { isAllowedContentImageUrl, isHttpsUrl } from "../contentUrl";
 import { profileSchema } from "../../shared/profileSchema";
+import { visitorDeparture } from "../visitorDeparture";
 
 const contentImageUrl = z.string().max(2048).refine(isAllowedContentImageUrl, "HTTPSまたはアップロード済みの画像URLを入力してください。");
 const optionalContentImageUrl = contentImageUrl.optional().or(z.literal(""));
 const workInput = z.object({ title: z.string().min(1).max(160), summary: z.string().min(1).max(2000), category: z.string().min(1).max(80), url: z.string().max(2048).refine(value => value === "" || isHttpsUrl(value), "作品リンクはHTTPS URLを入力してください。"), thumbnailUrl: optionalContentImageUrl, pdfUrl: z.string().max(2048).optional(), accent: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
-const bookInput = z.object({ title: z.string().min(1).max(180), author: z.string().min(1).max(160), note: z.string().min(1).max(2000), coverImageUrl: optionalContentImageUrl, coverColor: z.string().max(30), sortOrder: z.number().int().min(0).max(999) });
-const galleryInput = z.object({ title: z.string().min(1).max(160), caption: z.string().min(1).max(2000), imageUrl: contentImageUrl, camera: z.string().max(180).optional().or(z.literal("")), lens: z.string().max(180).optional().or(z.literal("")), location: z.string().max(240).optional().or(z.literal("")), takenAt: z.date().nullable(), rotation: z.number().int().min(-20).max(20), sortOrder: z.number().int().min(0).max(999) });
+const galleryInput = z.object({ title: z.string().min(1).max(160), caption: z.string().min(1).max(2000), imageUrl: contentImageUrl, camera: z.string().max(180).optional().or(z.literal("")), lens: z.string().max(180).optional().or(z.literal("")), location: z.string().max(240).optional().or(z.literal("")), takenAt: z.date().nullable(), focalLength: z.string().max(80).optional(), aperture: z.string().max(80).optional(), shutterSpeed: z.string().max(80).optional(), iso: z.string().max(80).optional(), rotation: z.number().int().min(-20).max(20), sortOrder: z.number().int().min(0).max(999) });
 const idInput = z.object({ id: z.number().int().positive() });
 const imageUploadInput = z.object({
   filename: z.string().trim().min(1).max(255),
   mimeType: z.enum(allowedImageMimeTypes),
   base64: z.string().min(4).max(IMAGE_UPLOAD_BASE64_MAX_LENGTH),
-  scope: z.enum(["gallery", "works", "books", "blog"]).default("gallery"),
+  scope: z.enum(["gallery", "works", "blog"]).default("gallery"),
 });
 
 export const contentRouter = router({
+  departure: router({ get: publicProcedure.query(({ ctx }) => visitorDeparture(ctx.req.socket?.remoteAddress ?? "")) }),
   profile: router({ get: publicProcedure.query(() => db.getSiteSettings()) }),
   works: router({ list: publicProcedure.query(() => db.listWorks()) }),
-  books: router({ list: publicProcedure.query(() => db.listBooks()) }),
   gallery: router({ list: publicProcedure.query(() => db.listGalleryItems()) }),
 });
 
@@ -38,12 +38,6 @@ export const adminContentRouter = router({
     create: ownerProcedure.input(workInput).mutation(({ input }) => db.createWork({ ...input, url: input.url || null, thumbnailUrl: input.thumbnailUrl || null })),
     update: ownerProcedure.input(idInput.merge(workInput)).mutation(({ input }) => db.updateWork(input.id, { ...input, url: input.url || null, thumbnailUrl: input.thumbnailUrl || null })),
     remove: ownerProcedure.input(idInput).mutation(({ input }) => db.deleteWork(input.id)),
-  }),
-  books: router({
-    list: ownerProcedure.query(() => db.listBooks()),
-    create: ownerProcedure.input(bookInput).mutation(({ input }) => db.createBook({ ...input, coverImageUrl: input.coverImageUrl || null })),
-    update: ownerProcedure.input(idInput.merge(bookInput)).mutation(({ input }) => db.updateBook(input.id, { ...input, coverImageUrl: input.coverImageUrl || null })),
-    remove: ownerProcedure.input(idInput).mutation(({ input }) => db.deleteBook(input.id)),
   }),
   gallery: router({
     list: ownerProcedure.query(() => db.listGalleryItems()),

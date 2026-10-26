@@ -200,7 +200,6 @@ try {
     "/about",
     "/works",
     "/photos",
-    "/library",
     "/blog",
     `/blog/${posts[0].slug}`,
     "/visitor",
@@ -265,30 +264,9 @@ try {
     .getByRole("button", { name: "管理画面を開く", exact: true })
     .click();
   await page.getByRole("heading", { name: "プロフィールを整える" }).waitFor();
-  // Cover-image book rows are not present in every integration fixture.
-  const bookResponse = await page.request.get(
-    `${base}/api/trpc/admin.content.books.list`
-  );
-  const books = (await bookResponse.json()).result.data.json;
-  const bookTitle = "Responsive QA：写真と制作を記録するための長い本のタイトル";
-  if (!books.some(book => book.title === bookTitle)) {
-    const galleryResponse = await page.request.get(
-      `${base}/api/trpc/content.gallery.list`
-    );
-    const photos = (await galleryResponse.json()).result.data.json;
-    assert(photos[0]?.imageUrl, "Photo fixture required");
-    await mutate("admin.content.books.create", {
-      title: bookTitle,
-      author: "長い著者名と共同制作の記録",
-      note: "CoverImageLayoutAndLongBookNotes".repeat(8),
-      coverImageUrl: photos[0].imageUrl,
-      coverColor: "pink",
-      sortOrder: 0,
-    });
-  }
   for (const width of widths) {
     await page.setViewportSize({ width, height: 900 });
-    for (const name of ["自己紹介", "Blog", "Works", "Books", "Gallery"]) {
+    for (const name of ["自己紹介", "Blog", "Works", "Gallery"]) {
       if (await page.locator(".admin-mobile-menu").isVisible()) {
         await page.locator(".admin-mobile-menu").click();
         await page
@@ -349,7 +327,6 @@ try {
   for (const width of widths) {
     await page.setViewportSize({ width, height: 900 });
     for (const [name, route] of [
-      ["library-cover", "/library"],
       ["article-comment", `/blog/${posts[0].slug}`],
     ]) {
       await page.goto(base + route);
@@ -480,7 +457,6 @@ try {
     ["Works", "/works"],
     ["Gallery", "/photos"],
     ["Blog", "/blog"],
-    ["Library", "/library"],
     ["About", "/about"],
   ]) {
     await menu.tap();

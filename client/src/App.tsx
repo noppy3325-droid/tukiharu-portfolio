@@ -12,7 +12,6 @@ const About = lazy(() => import("./pages/About"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Home = lazy(() => import("./pages/Home"));
-const Library = lazy(() => import("./pages/Library"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Photos = lazy(() => import("./pages/Photos"));
 const Works = lazy(() => import("./pages/Works"));
@@ -25,7 +24,6 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/about"} component={About} />
       <Route path={"/works"} component={Works} />
-      <Route path={"/library"} component={Library} />
       <Route path={"/photos"} component={Photos} />
       <Route path={"/blog"} component={Blog} />
       <Route path={"/blog/:slug"} component={BlogPost} />

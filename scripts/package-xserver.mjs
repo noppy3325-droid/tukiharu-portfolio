@@ -1,13 +1,26 @@
-import { cp, mkdir, readdir, readFile } from "node:fs/promises";
-await mkdir("dist/public", { recursive: true });
-await cp("xserver/public", "dist/public", { recursive: true });
-// Never copy private settings, databases, sessions or source code into public_html.
-const files = await readdir("dist/public");
-if (files.some(name => name.endsWith(".sqlite") || name === "config.php"))
-  throw new Error("Private file in deploy output");
-const html = await readFile("dist/public/index.html", "utf8");
-if (/__manus__|VITE_ANALYTICS|manus-runtime/.test(html))
-  throw new Error("Legacy runtime reference in build");
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { prepareXserverRelease } from "./xserver-release.mjs";
+
+const root = fileURLToPath(new URL("../", import.meta.url));
+await prepareXserverRelease(root);
+if (process.platform === "win32") {
+  const result = spawnSync(
+    "powershell.exe",
+    [
+      "-NoProfile",
+      "-File",
+      fileURLToPath(new URL("./zip-xserver.ps1", import.meta.url)),
+    ],
+    { stdio: "inherit" }
+  );
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error("Could not create the update ZIP");
+}
 console.log(
-  "XServer release prepared in dist/public (React assets + PHP API)."
+  "Update: upload the contents of dist/update (Windows: dist/update.zip)."
 );
+console.log(
+  "Overwrite files in public_html; do not delete or mirror the destination."
+);
+console.log("First installation only: dist/public includes uploads/.htaccess.");

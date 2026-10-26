@@ -1,7 +1,7 @@
 # XServer deployment and operations
 
 Version 2 preserves the existing React gallery, typography, blue/pink palette,
-navigation, rich-text editor, photo viewer, batch uploads, books, likes and
+navigation, rich-text editor, photo viewer, batch uploads, likes and
 comment controls. The deployed backend is PHP; Node.js is needed only on the
 developer's computer to build the frontend.
 
@@ -52,14 +52,20 @@ are retained; they do not require an account or API key.
 pnpm install --frozen-lockfile
 pnpm check
 pnpm test
+pnpm test:release
 pnpm build
 ```
 
-The deployable directory is `dist/public`. It contains `index.html`, hashed
-frontend assets, `api/*.php`, root `.htaccess`, and `uploads/.htaccess`. It does
-not contain source code, database exports, credentials, sessions or a Node
-backend. The build clears its output: keep production uploads and private data
-on the server, not in a build directory on your computer.
+The initial-installation directory is `dist/public`. It contains `index.html`,
+hashed frontend assets, the four PHP API files, root `.htaccess`, and
+`uploads/.htaccess`. Subsequent releases use **`dist/update`**, which excludes
+the entire `uploads` directory. On Windows, the build also creates
+**`dist/update.zip`** with `.htaccess` included and no enclosing directory.
+Other platforms can upload `dist/update` directly.
+
+Neither release contains source code, database exports, credentials, sessions,
+or local uploaded media. The build clears its generated output: keep production
+uploads and private data on the server, not in a build directory on your computer.
 
 Typical XServer layout:
 
@@ -98,11 +104,37 @@ Typical XServer layout:
    the correct MIME types, PDF responses use attachment disposition, and HTTPS
    session cookies have `Secure`, `HttpOnly`, and `SameSite=Lax`.
 
-On subsequent releases, replace app files and hashed assets while preserving
-`public_html/uploads` and `<domain>/portfolio-private`. Never synchronize with
-a “delete remote files not present locally” option against those directories.
+On subsequent releases, overwrite app files from `dist/update` while preserving
+`public_html/uploads` and `<domain>/portfolio-private`. Never delete the
+destination first or synchronize with a “delete remote files not present locally”
+option. Omitting uploads from the package prevents replacing that directory
+with an empty one; it cannot protect files from manually deleting the web root.
 The rewrite assumes deployment at the domain root; subdirectory hosting needs
 coordinated URL, router and Vite base changes and is not supported by default.
+
+## 継続更新と画像の復旧
+
+### 次回からの更新
+
+1. ローカルで `pnpm build` を実行します。Windowsでは `dist/update.zip` が生成されます。
+2. XServerのファイルマネージャーで、既存の `public_html` にZIPをアップロードします。
+3. **既存ファイルを上書きして** `public_html` 内へ展開します。先に `public_html` やその中身を削除しないでください。展開機能で上書きできない場合は、ローカルでZIPを展開してFTPで中身を上書きアップロードします。
+4. `public_html/index.html`、`api`、`assets`、`.htaccess` が更新され、`uploads` が残っていることを確認します。ZIPの中身に外側の `update` フォルダはありません。
+5. 公開ページの写真と `/admin` のログインを確認し、アップロードした `update.zip` は削除します。
+
+ファイルマネージャーのアップロード・展開機能は [XServer公式マニュアル](https://www.xserver.ne.jp/manual/man_tool_file.php) を参照してください。実サーバー上の展開時の動作は、利用する画面で確認します。
+
+更新ZIPは `uploads` とプライベート領域を含まないため、通常の上書きで投稿データを維持できます。FTPでも `dist/update` の中身を上書き転送するだけで更新でき、削除同期は無効にします。ハッシュ付きの古いアセットは残っていても動作します。更新のたびに `assets` を削除する必要はありません。
+
+### uploadsを消してしまった場合
+
+SQLiteには画像のURLが保存されていますが、画像そのものは `uploads` 内の別ファイルです。DBだけが残っていても画像は再生成できません。
+
+- `uploads` のバックアップがあれば、元のファイル名のまま `public_html/uploads` に戻します。DB内のURLはそのまま使えます。
+- バックアップがなければ、`/admin` で既存の作品・写真を編集し、元画像を選び直してアップロード・保存します。新しいURLが記録されます。Blogの本文内画像もそれぞれ差し替えます。
+- 正常な画像URLは画像のContent-Typeを返します。存在しない `/uploads/...` は404を返すようにし、トップページのHTMLへの誤ったフォールバックを防いでいます。
+
+サーバー側の画像を戻す作業は、ビルドや更新ZIPの展開とは別です。以後のバックアップでは `portfolio-private` と `public_html/uploads` を両方保存します。
 
 ## Local development and preview
 
@@ -142,7 +174,8 @@ area to the detailed profile. Email remains a separate contact link.
 Works supports description, thumbnail, HTTPS project link and uploaded PDF.
 Blog retains drafts/publication, rich-text editing and inline image insertion.
 Photos retain batch registration, camera/lens/location/date metadata and the
-accessible enlarged viewer. Books remain editable.
+accessible enlarged viewer. Books was retired on 2026-10-26; old records remain
+in backups while public, editing and search endpoints are disabled.
 
 Image uploads use existing browser optimization, followed by server-side MIME
 validation, decoding and re-encoding with GD. The server limits the longest

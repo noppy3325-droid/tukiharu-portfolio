@@ -7,7 +7,7 @@ import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { defaultProfile } from "@shared/profile";
 
 export const HOME_SEO_TITLE =
-  "月春の資材置き場｜写真・作品・本・Blogを記録する個人ポートフォリオサイト";
+  "月春の資材置き場｜写真・作品・Blogと日々を記録する個人ポートフォリオサイト";
 
 type GalleryEntry = {
   id: string;
@@ -15,7 +15,7 @@ type GalleryEntry = {
   title: string;
   meta: string;
   updatedAt: Date | string;
-  kind: "work" | "book" | "photo" | "note";
+  kind: "work" | "photo" | "note";
   imageUrl?: string | null;
 };
 function formatDate(date: Date | string) {
@@ -41,8 +41,7 @@ function GalleryThumbnail({ kind }: { kind: GalleryEntry["kind"] }) {
         <rect x="62" y="51" width="54" height="3" fill="#cfabb7" />
       </svg>
     );
-  if (kind === "book")
-    return (
+  return (
       <svg viewBox="0 0 240 230" aria-hidden="true">
         <rect width="240" height="230" fill="#eee9f6" />
         <path d="M45 54h76v124H45z" fill="#c9bcd6" />
@@ -85,7 +84,6 @@ export default function Home() {
   }, []);
 
   const works = trpc.content.works.list.useQuery();
-  const books = trpc.content.books.list.useQuery();
   const photos = trpc.content.gallery.list.useQuery();
   const notes = trpc.blog.list.useQuery();
   const profile = trpc.content.profile.get.useQuery(undefined, {
@@ -102,15 +100,6 @@ export default function Home() {
       updatedAt: item.updatedAt,
       kind: "work" as const,
       imageUrl: item.thumbnailUrl,
-    })),
-    ...(books.data ?? []).map(item => ({
-      id: `book-${item.id}`,
-      href: "/library",
-      title: item.title,
-      meta: item.author,
-      updatedAt: item.updatedAt,
-      kind: "book" as const,
-      imageUrl: item.coverImageUrl,
     })),
     ...(photos.data ?? []).map(item => ({
       id: `photo-${item.id}`,
@@ -132,9 +121,9 @@ export default function Home() {
   ]);
   const previewEntries = buildHomePreview(entries);
   const loading =
-    works.isLoading || books.isLoading || photos.isLoading || notes.isLoading;
+    works.isLoading || photos.isLoading || notes.isLoading;
   const loadError =
-    works.isError || books.isError || photos.isError || notes.isError;
+    works.isError || photos.isError || notes.isError;
   return (
     <TsukiLayout>
       <section
@@ -146,7 +135,7 @@ export default function Home() {
           <h1 id="archive-heading">制作と日々の記録</h1>
         </div>
         <p>
-          作品、写真、読書、Blog。
+          作品、写真、Blog。
           <br />
           各カテゴリの最近の記録から。
           <ArrowDown size={16} aria-hidden="true" />

@@ -3,6 +3,9 @@ DirectoryIndex index.html
 RewriteEngine On
 RewriteRule ^api/trpc/(.*)$ api/index.php?path=$1 [QSA,L]
 RewriteRule ^api/trpc$ api/index.php [QSA,L]
+# Missing media must return 404 rather than the SPA's index.html.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^uploads/ - [R=404,L]
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]

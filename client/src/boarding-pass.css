@@ -1,0 +1,836 @@
+.profile-ticket-trigger {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: box-shadow 0.2s;
+}
+.profile-ticket-trigger:hover {
+  box-shadow: 0 0 0 6px #d7e9f0;
+}
+.profile-ticket-trigger:focus-visible,
+.profile-ticket-name:focus-visible {
+  outline: 2px solid #39708a;
+  outline-offset: 6px;
+}
+.profile-ticket-name {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  text-align: left;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+.profile-ticket-name > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font:
+    500 0.65rem/1.7 "DM Mono",
+    sans-serif;
+  letter-spacing: 0.03em;
+  color: #39708a;
+  border-bottom: 1px solid #a5c5d4;
+}
+.boarding-dialog {
+  --boarding-ink: #203b4a;
+  --boarding-muted: #566974;
+  --boarding-rule: #d2d8d6;
+  width: min(940px, calc(100vw - 24px)) !important;
+  max-width: 940px !important;
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  display: block !important;
+  padding: 24px 26px 16px !important;
+  border: 1px solid #b8c8ca !important;
+  border-radius: 12px !important;
+  background: #e9eeee !important;
+  color: var(--boarding-ink);
+  box-shadow: 0 30px 100px #102c3b52 !important;
+  scrollbar-width: thin;
+  animation: none !important;
+}
+.boarding-dialog-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+.boarding-dialog-header p {
+  margin: 0 0 4px;
+  font:
+    500 9px/1.5 "DM Mono",
+    monospace;
+  letter-spacing: 0.1em;
+  color: var(--boarding-muted);
+}
+.boarding-dialog-header h2 {
+  margin: 0 !important;
+  font:
+    500 20px/1.5 "Shippori Mincho",
+    "Yu Mincho",
+    serif !important;
+  letter-spacing: 0.04em;
+}
+.boarding-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 1px solid #bfced1;
+  border-radius: 50%;
+  background: #f8fbfa;
+  color: #315361;
+  cursor: pointer;
+}
+.boarding-close:focus-visible,
+.boarding-pass-paper a:focus-visible,
+.boarding-location-info summary:focus-visible,
+.boarding-location-info a:focus-visible {
+  outline: 2px solid #ad614a;
+  outline-offset: 3px;
+}
+.boarding-dialog-description {
+  font-size: 12px !important;
+  line-height: 1.8 !important;
+  color: var(--boarding-muted) !important;
+  margin: 10px 0 20px !important;
+}
+.boarding-printer {
+  position: relative;
+  z-index: 2;
+  padding: 10px 16px 0;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid #879b9d;
+  background: linear-gradient(#d9e2e1, #bdcccc);
+  box-shadow: 0 5px 12px #183c4b1a;
+}
+.boarding-printer > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font:
+    500 8px/1.5 "DM Mono",
+    monospace;
+  letter-spacing: 0.08em;
+  color: #456269;
+}
+.boarding-printer i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #5c8d77;
+  box-shadow: 0 0 0 3px #5c8d771a;
+}
+.boarding-printer-slot {
+  height: 7px;
+  margin: 8px 0 -4px;
+  border: 1px solid #5d787f;
+  border-radius: 4px;
+  background: #183b46;
+  box-shadow: inset 0 2px 3px #00152280;
+}
+.boarding-print-output {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 0 10px 16px;
+}
+.boarding-pass-paper {
+  position: relative;
+  z-index: -1;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  filter: drop-shadow(0 5px 5px #1b3e4b20);
+  transform-origin: top center;
+  font-family: "DM Mono", "Noto Sans JP", sans-serif;
+  letter-spacing: 0;
+}
+.boarding-pass-main,
+.boarding-pass-stub {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+}
+.boarding-paper-outline {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.boarding-paper-outline path {
+  fill: #fffef8;
+  stroke: #bfc9c7;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.boarding-outline-narrow {
+  display: none;
+}
+.boarding-airline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 64px;
+  padding: 14px 22px;
+  background: #203b4a;
+  color: #fffef8;
+  border-radius: 2px 0 0 0;
+}
+.boarding-airline > div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+.boarding-airline svg {
+  flex-shrink: 0;
+  transform: rotate(45deg);
+}
+.boarding-airline strong {
+  font:
+    500 17px/1.3 "DM Mono",
+    monospace;
+  letter-spacing: 0.12em;
+}
+.boarding-airline strong span {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+}
+.boarding-type {
+  text-align: right;
+  font:
+    500 11px/1.5 "DM Mono",
+    monospace;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.boarding-type small {
+  font-size: 8px;
+  letter-spacing: 0.03em;
+  color: #cedadd;
+}
+.boarding-ticket-body {
+  padding: 20px 24px 14px;
+}
+.boarding-passenger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.boarding-passenger > div {
+  min-width: 0;
+}
+.boarding-passenger > div > span,
+.boarding-route > div > span,
+.boarding-flight-details dt,
+.boarding-social > span:first-child {
+  display: block;
+  font:
+    500 9px/1.6 "DM Mono",
+    sans-serif;
+  letter-spacing: 0.06em;
+  color: var(--boarding-muted);
+}
+.boarding-passenger h2 {
+  margin: 4px 0 0 !important;
+  font:
+    600 25px/1.4 "Noto Sans JP",
+    sans-serif !important;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
+}
+.boarding-passenger img {
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  object-fit: cover;
+  flex-shrink: 0;
+  filter: saturate(0.8);
+}
+.boarding-route {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 22px 0 18px;
+}
+.boarding-route > div:last-child {
+  text-align: right;
+}
+.boarding-route strong {
+  display: block;
+  font:
+    500 32px/1.15 "DM Mono",
+    sans-serif;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+  margin: 6px 0;
+}
+.boarding-route > div:last-child strong {
+  font-size: 44px;
+  letter-spacing: 0.04em;
+}
+.boarding-route small {
+  display: block;
+  font:
+    400 10px/1.5 "DM Mono",
+    sans-serif;
+  color: var(--boarding-muted);
+  overflow-wrap: anywhere;
+  min-height: 15px;
+}
+.boarding-departure {
+  min-width: 0;
+  min-height: 88px;
+}
+.boarding-flight-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.boarding-flight-line i {
+  height: 1px;
+  flex: 1;
+  background: #9dadaa;
+}
+.boarding-flight-line svg {
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  color: #486672;
+}
+.boarding-flight-details {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 0.7fr 0.65fr;
+  gap: 14px;
+  margin: 0;
+  padding: 14px 0;
+  border-block: 1px solid var(--boarding-rule);
+  align-items: start;
+}
+.boarding-flight-details > div {
+  min-width: 0;
+}
+.boarding-flight-details dd {
+  margin: 6px 0 0;
+  font:
+    500 17px/1.4 "DM Mono",
+    sans-serif;
+  overflow-wrap: anywhere;
+}
+.boarding-flight-details time {
+  font-size: 14px;
+}
+.boarding-flight-details .boarding-seat {
+  border-left: 1px solid var(--boarding-rule);
+  padding-left: 14px;
+}
+.boarding-seat dd {
+  font-weight: 600;
+  font-size: 22px;
+}
+.boarding-site-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--boarding-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--boarding-rule);
+  font:
+    500 12px/1.6 "DM Mono",
+    monospace;
+  overflow-wrap: anywhere;
+}
+.boarding-site-link svg {
+  flex-shrink: 0;
+}
+.boarding-socials {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  padding-top: 12px;
+}
+.boarding-social {
+  min-width: 0;
+}
+.boarding-social a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  font:
+    500 12px/1.6 "DM Mono",
+    monospace;
+  color: var(--boarding-ink);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-decoration: none;
+}
+.boarding-social a svg {
+  flex-shrink: 0;
+}
+.boarding-social a:hover,
+.boarding-site-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.boarding-unset {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--boarding-muted);
+  font-size: 11px;
+}
+.boarding-ticket-note {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 3px;
+  padding-top: 10px;
+  border-top: 1px solid var(--boarding-rule);
+  font:
+    400 7px/1.5 "DM Mono",
+    monospace;
+  letter-spacing: 0.02em;
+  color: var(--boarding-muted);
+}
+.boarding-pass-stub {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 14px;
+}
+.boarding-pass-stub:before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  border-left: 1px dashed #a4b1af;
+}
+.boarding-stub-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 64px;
+  border-bottom: 1px solid var(--boarding-rule);
+  font:
+    500 12px/1.5 "DM Mono",
+    monospace;
+  letter-spacing: 0.08em;
+}
+.boarding-stub-header span {
+  font-size: 9px;
+  letter-spacing: 0.03em;
+  color: var(--boarding-muted);
+}
+.boarding-stub-copy {
+  padding-top: 18px;
+  min-width: 0;
+}
+.boarding-stub-copy > span:first-child {
+  display: block;
+  font:
+    500 8px/1.5 "DM Mono",
+    monospace;
+  letter-spacing: 0.08em;
+  color: var(--boarding-muted);
+}
+.boarding-stub-copy strong {
+  display: block;
+  font:
+    600 17px/1.5 "Noto Sans JP",
+    sans-serif;
+  margin: 4px 0 12px;
+  overflow-wrap: anywhere;
+}
+.boarding-stub-copy p {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 0;
+  font:
+    500 11px/1.7 "DM Mono",
+    monospace;
+}
+.boarding-stub-copy p > span {
+  font-size: 9px;
+}
+.boarding-stub-copy b {
+  font-size: 14px;
+}
+.boarding-stub-route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-block: 1px solid var(--boarding-rule);
+  padding: 9px 0;
+  margin-top: 10px;
+  font:
+    500 11px/1.5 "DM Mono",
+    sans-serif;
+  text-transform: uppercase;
+}
+.boarding-stub-route > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.boarding-stub-route > span:first-child {
+  flex: 1;
+}
+.boarding-stub-route > span:not(:first-child) {
+  flex-shrink: 0;
+}
+.boarding-ticket-number {
+  display: block;
+  margin-top: 9px;
+  font:
+    400 8px/1.5 "DM Mono",
+    monospace;
+  color: var(--boarding-muted);
+}
+.boarding-qr-link {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  min-width: 0;
+  color: var(--boarding-ink);
+  text-decoration: none;
+  margin-top: auto;
+  padding-top: 12px;
+}
+.boarding-qr {
+  display: block;
+  width: 120px;
+  height: 120px;
+  background: white;
+}
+.boarding-qr-link > span {
+  font:
+    500 8px/1.5 "DM Mono",
+    monospace;
+  letter-spacing: 0.06em;
+}
+.boarding-desk-note {
+  margin: 0;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--boarding-muted);
+}
+.boarding-location-info {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--boarding-muted);
+  margin-top: 3px;
+}
+.boarding-location-info summary {
+  cursor: pointer;
+  width: fit-content;
+  min-height: 44px;
+  display: list-item;
+  align-content: center;
+  margin: auto;
+}
+.boarding-location-info p {
+  margin: 0 auto;
+  max-width: 66ch;
+  padding: 0 8px 8px;
+}
+.boarding-location-info a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .boarding-pass-paper {
+    animation: boarding-ticket-print 1700ms cubic-bezier(0.18, 0.55, 0.2, 1)
+      both;
+  }
+  @keyframes boarding-ticket-print {
+    0% {
+      transform: translateY(-105%);
+    }
+    10% {
+      transform: translateY(-103%);
+    }
+    80% {
+      transform: translateY(-5%);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .boarding-dialog,
+  .boarding-pass-paper,
+  .profile-ticket-trigger {
+    animation: none !important;
+    transition: none !important;
+  }
+  .boarding-pass-paper {
+    transform: none;
+  }
+}
+@media (max-width: 800px) and (min-width: 641px) {
+  .boarding-dialog {
+    padding-inline: 18px !important;
+  }
+  .boarding-pass-paper {
+    grid-template-columns: minmax(0, 1fr) 170px;
+  }
+  .boarding-ticket-body {
+    padding-inline: 18px;
+  }
+  .boarding-airline {
+    padding-inline: 18px;
+    gap: 8px;
+  }
+  .boarding-airline strong {
+    font-size: 14px;
+  }
+  .boarding-airline strong span {
+    display: block;
+    font-size: 8px;
+  }
+  .boarding-type {
+    font-size: 9px;
+  }
+  .boarding-route {
+    gap: 8px;
+    grid-template-columns: minmax(0, 1.3fr) 26px minmax(0, 1fr);
+  }
+  .boarding-route strong {
+    font-size: 26px;
+  }
+  .boarding-flight-details {
+    gap: 8px;
+  }
+  .boarding-flight-details dd {
+    font-size: 14px;
+  }
+  .boarding-flight-details time {
+    font-size: 11px;
+  }
+  .boarding-pass-stub {
+    padding-inline: 14px;
+  }
+  .boarding-social a {
+    font-size: 10px;
+  }
+}
+@media (max-width: 640px) {
+  .boarding-dialog {
+    max-width: 460px !important;
+    padding: 18px 14px 12px !important;
+  }
+  .boarding-dialog-header h2 {
+    font-size: 18px !important;
+  }
+  .boarding-dialog-description {
+    font-size: 11px !important;
+    margin-bottom: 16px !important;
+  }
+  .boarding-print-output {
+    padding-inline: 5px;
+  }
+  .boarding-pass-paper {
+    display: block;
+    max-width: 406px;
+  }
+  .boarding-outline-wide {
+    display: none;
+  }
+  .boarding-outline-narrow {
+    display: block;
+  }
+  .boarding-airline {
+    min-height: 60px;
+    padding: 14px 18px;
+    border-radius: 2px 2px 0 0;
+    gap: 8px;
+  }
+  .boarding-airline strong {
+    font-size: 14px;
+  }
+  .boarding-airline strong span {
+    display: block;
+    font-size: 8px;
+  }
+  .boarding-type {
+    font-size: 10px;
+  }
+  .boarding-type small {
+    font-size: 7px;
+  }
+  .boarding-ticket-body {
+    padding: 18px 18px 14px;
+  }
+  .boarding-route {
+    grid-template-columns: minmax(0, 1.2fr) 26px minmax(0, 1fr);
+    gap: 8px;
+    padding-block: 20px 16px;
+  }
+  .boarding-route strong {
+    font-size: 26px;
+  }
+  .boarding-route > div:last-child strong {
+    font-size: 38px;
+  }
+  .boarding-route small {
+    font-size: 9px;
+  }
+  .boarding-passenger h2 {
+    font-size: 23px !important;
+  }
+  .boarding-flight-details {
+    grid-template-columns: 1fr 1.5fr;
+    gap: 12px 16px;
+  }
+  .boarding-flight-details dd {
+    font-size: 17px;
+  }
+  .boarding-flight-details time {
+    font-size: 15px;
+  }
+  .boarding-flight-details .boarding-seat {
+    border-left: 0;
+    padding-left: 0;
+  }
+  .boarding-socials {
+    gap: 10px;
+  }
+  .boarding-social a {
+    font-size: 10px;
+  }
+  .boarding-ticket-note {
+    font-size: 6px;
+    gap: 5px;
+  }
+  .boarding-pass-stub {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 106px;
+    gap: 0 12px;
+    padding: 18px;
+  }
+  .boarding-pass-stub:before {
+    top: 0;
+    bottom: auto;
+    left: 14px;
+    right: 14px;
+    border-left: 0;
+    border-top: 1px dashed #a4b1af;
+  }
+  .boarding-stub-header {
+    min-height: 0;
+    grid-column: 1/-1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    gap: 8px;
+    font-size: 10px;
+  }
+  .boarding-stub-copy {
+    padding-top: 0;
+  }
+  .boarding-stub-copy strong {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  .boarding-stub-copy p {
+    font-size: 10px;
+    flex-wrap: wrap;
+  }
+  .boarding-stub-route {
+    font-size: 10px;
+    margin-top: 6px;
+    padding-block: 6px;
+  }
+  .boarding-ticket-number {
+    font-size: 7px;
+    margin-top: 6px;
+  }
+  .boarding-qr-link {
+    margin: 0;
+    padding: 0;
+    align-self: center;
+  }
+  .boarding-qr {
+    width: 106px;
+    height: 106px;
+  }
+  .boarding-qr-link > span {
+    font-size: 7px;
+  }
+  .boarding-desk-note {
+    font-size: 9px;
+    padding-inline: 4px;
+  }
+}
+@media (max-width: 374px) {
+  .boarding-dialog {
+    padding-inline: 10px !important;
+  }
+  .boarding-dialog-header p {
+    font-size: 8px;
+  }
+  .boarding-airline {
+    padding-inline: 14px;
+  }
+  .boarding-airline strong {
+    font-size: 12px;
+  }
+  .boarding-airline > div {
+    gap: 7px;
+  }
+  .boarding-type {
+    font-size: 8px;
+  }
+  .boarding-ticket-body {
+    padding-inline: 14px;
+  }
+  .boarding-route strong {
+    font-size: 22px;
+  }
+  .boarding-route > div > span {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+  .boarding-route small {
+    font-size: 8px;
+  }
+  .boarding-pass-stub {
+    padding-inline: 14px;
+    grid-template-columns: minmax(0, 1fr) 92px;
+    gap: 0 10px;
+  }
+  .boarding-qr {
+    width: 92px;
+    height: 92px;
+  }
+  .boarding-social a {
+    font-size: 9px;
+  }
+}

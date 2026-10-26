@@ -20,11 +20,6 @@ const navigationItems = [
   },
   { href: "/photos", label: "Gallery", description: "写真で残した景色と瞬間" },
   { href: "/blog", label: "Blog", description: "考えたこと、日々の記録" },
-  {
-    href: "/library",
-    label: "Library",
-    description: "読んだ本と、心に残ったこと",
-  },
   { href: "/about", label: "About", description: "月春について、好きなもの" },
 ];
 

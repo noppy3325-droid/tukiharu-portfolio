@@ -32,6 +32,7 @@ const env = { ...process.env, PORTFOLIO_PRIVATE_DIR: privateDir };
 fs.mkdirSync(privateDir, { recursive: true });
 for (const name of [
   "bootstrap.php",
+  "departure.php",
   "procedures.php",
   "index.php",
   "media.php",
@@ -116,6 +117,7 @@ try {
   await a.adminAccess.login.mutate({ password: "Portfolio-QA-only-2026!" });
   assert.equal((await a.adminAccess.status.query()).isAdmin, true);
   const initial = await a.content.profile.get.query();
+  assert.deepEqual(await g.content.departure.get.query(), { status: "unavailable", city: "", region: "", country: "", countryCode: "" });
   const profile = {
     ...initial,
     name: "月春",
@@ -130,6 +132,9 @@ try {
     devices: [
       {
         name: "Development workspace",
+        category: "computer",
+        specifications: "",
+        note: "",
         imageUrl: "",
         os: "Windows",
         cpu: "管理画面で登録できます",
@@ -353,23 +358,8 @@ try {
     body: new FormData(),
   });
   assert.equal(deniedPdf.status, 403);
-  const book = {
-    title: "読書の記録",
-    author: "著者",
-    note: "テスト用メモ",
-    coverImageUrl: "",
-    coverColor: "mint",
-    sortOrder: 0,
-  };
-  await a.admin.content.books.create.mutate(book);
-  const [savedBook] = await g.content.books.list.query();
-  await a.admin.content.books.update.mutate({
-    ...book,
-    id: savedBook.id,
-    note: "更新済み",
-  });
-  assert.equal((await g.content.books.list.query())[0].note, "更新済み");
-  await a.admin.content.books.remove.mutate({ id: savedBook.id });
+  await assert.rejects(() => g.content.books.list.query(), error => error.data?.code === "NOT_FOUND");
+  await assert.rejects(() => a.admin.content.books.create.mutate({}), error => error.data?.code === "NOT_FOUND");
   await g.blog.like.mutate({
     id: published.id,
     visitorKey: "migration-visitor",

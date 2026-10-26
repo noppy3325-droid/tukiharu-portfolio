@@ -1,4 +1,7 @@
+import type { DeviceCategory } from "./devices";
+
 export type Device = {
+  category?: DeviceCategory;
   name: string;
   imageUrl: string;
   os: string;
@@ -6,6 +9,8 @@ export type Device = {
   memory: string;
   storage: string;
   software: string;
+  specifications?: string;
+  note?: string;
 };
 export type MusicItem = {
   title: string;

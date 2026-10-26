@@ -29,7 +29,7 @@ export function decodeAndValidateImage(base64: string, mimeType: AllowedImageMim
   return data;
 }
 
-export type ImageUploadScope = "gallery" | "works" | "books" | "blog";
+export type ImageUploadScope = "gallery" | "works" | "blog";
 
 export function createImageStorageKey(fileName: string, mimeType: AllowedImageMimeType, scope: ImageUploadScope = "gallery"): string {
   const extension = imageExtensions[mimeType];

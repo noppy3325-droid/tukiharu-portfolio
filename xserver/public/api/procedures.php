@@ -1,9 +1,10 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/departure.php';
 
-const QUERY_PATHS = ['auth.me','adminAccess.status','content.profile.get','content.works.list','content.books.list','content.gallery.list','blog.list','blog.navigation','blog.bySlug','blog.comments','blog.likes','admin.content.profile.get','admin.content.works.list','admin.content.books.list','admin.content.gallery.list','admin.blog.posts.list'];
-const MUTATION_PATHS = ['auth.logout','visitor.start','adminAccess.login','adminAccess.logout','adminAccess.changePassword','admin.content.profile.update','admin.content.works.create','admin.content.works.update','admin.content.works.remove','admin.content.books.create','admin.content.books.update','admin.content.books.remove','admin.content.gallery.create','admin.content.gallery.update','admin.content.gallery.remove','admin.content.upload.image','admin.blog.posts.create','admin.blog.posts.update','admin.blog.posts.remove','admin.blog.comments.remove','blog.like','blog.unlike','blog.addComment','blog.updateComment','blog.removeComment','blog.restoreComment'];
+const QUERY_PATHS = ['auth.me','adminAccess.status','content.departure.get','content.profile.get','content.works.list','content.gallery.list','blog.list','blog.navigation','blog.bySlug','blog.comments','blog.likes','admin.content.profile.get','admin.content.works.list','admin.content.gallery.list','admin.blog.posts.list'];
+const MUTATION_PATHS = ['auth.logout','visitor.start','adminAccess.login','adminAccess.logout','adminAccess.changePassword','admin.content.profile.update','admin.content.works.create','admin.content.works.update','admin.content.works.remove','admin.content.gallery.create','admin.content.gallery.update','admin.content.gallery.remove','admin.content.upload.image','admin.blog.posts.create','admin.blog.posts.update','admin.blog.posts.remove','admin.blog.comments.remove','blog.like','blog.unlike','blog.addComment','blog.updateComment','blog.removeComment','blog.restoreComment'];
 
 function dispatch(string $path, array $input): mixed {
     if (!in_array($path, array_merge(QUERY_PATHS,MUTATION_PATHS),true)) fail('APIが見つかりません。','NOT_FOUND',404);
@@ -11,6 +12,7 @@ function dispatch(string $path, array $input): mixed {
     elseif (($_SERVER['REQUEST_METHOD']??'GET') !== 'GET') fail('GETが必要です。','METHOD_NOT_SUPPORTED',405);
     if (str_starts_with($path,'admin.')) owner();
 
+    if ($path==='content.departure.get') return visitorDeparture();
     if ($path==='auth.me') return isset($_SESSION['visitor']) ? ['id'=>$_SESSION['visitor']['id'],'name'=>$_SESSION['visitor']['name'],'role'=>'user'] : null;
     if ($path==='auth.logout') { unset($_SESSION['visitor']);session_regenerate_id(true);return ['success'=>true]; }
     if ($path==='visitor.start') {
@@ -30,13 +32,13 @@ function dispatch(string $path, array $input): mixed {
         owner();$password=passwordValue($input,true);
         saveSetting('passwordHash',password_hash($password,PASSWORD_DEFAULT));session_regenerate_id(true);$_SESSION['credentialVersion']=hash('sha256',passwordHash());return ['success'=>true];
     }
-    if (in_array($path,['content.profile.get','admin.content.profile.get'],true)) return array_replace(defaultProfile(),setting('profile',[]));
-    if ($path==='admin.content.profile.update') { saveSetting('profile',profileInput($input));return ['success'=>true]; }
+    if (in_array($path,['content.profile.get','admin.content.profile.get'],true)) return publicProfile();
+    if ($path==='admin.content.profile.update') { saveSetting('profile',array_replace(profileInput($input),['_musicLibraryInitialized'=>true]));return ['success'=>true]; }
     if ($path==='admin.content.upload.image') {
         $base64=textValue($input,'base64',7*1024*1024,true);$data=base64_decode($base64,true);if($data===false)fail('画像データが正しくありません。');
         return uploadMedia($data,textValue($input,'mimeType',100,true));
     }
-    if (preg_match('/^(content|admin\.content)\.(works|books|gallery)\.list$/D',$path,$m)) return records($m[2]);
+    if (preg_match('/^(content|admin\.content)\.(works|gallery)\.list$/D',$path,$m)) return records($m[2]);
     if ($path==='blog.list') return records('posts',true);
     if ($path==='admin.blog.posts.list') return records('posts');
     if ($path==='blog.bySlug') { $slug=textValue($input,'slug',220,true);foreach(records('posts',true) as $p)if($p['slug']===$slug)return $p;fail('記事が見つかりません。','NOT_FOUND',404); }
@@ -44,7 +46,7 @@ function dispatch(string $path, array $input): mixed {
         $id=idValue($input);$posts=records('posts',true);foreach($posts as $i=>$p)if($p['id']===$id)return ['newer'=>$posts[$i-1]??null,'older'=>$posts[$i+1]??null];
         fail('記事が見つかりません。','NOT_FOUND',404);
     }
-    if (preg_match('/^admin\.(content\.(works|books|gallery)|blog\.(posts))\.(create|update|remove)$/D',$path,$m)) {
+    if (preg_match('/^admin\.(content\.(works|gallery)|blog\.(posts))\.(create|update|remove)$/D',$path,$m)) {
         $kind=$m[2]?:$m[3];$op=$m[4];$id=$op==='create'?null:idValue($input);
         db()->exec('BEGIN IMMEDIATE');
         try {

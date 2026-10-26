@@ -16,7 +16,7 @@ try {
         file_put_contents($file,"<?php\nreturn ".var_export(['origin'=>$origin,'password_hash'=>$hash],true).";\n",LOCK_EX);chmod($file,0600);db();echo "Private configuration and SQLite database initialized.\n";exit;
     }
     if($command==='export') {
-        $out=['version'=>1,'profile'=>array_replace(defaultProfile(),setting('profile',[]))];foreach(['works','books','gallery','posts'] as $kind)$out[$kind]=records($kind);
+        $out=['version'=>1,'profile'=>publicProfile()];foreach(['works','books','gallery','posts'] as $kind)$out[$kind]=records($kind);
         $out['comments']=sql('SELECT c.*,v.name AS authorName FROM comments c JOIN visitors v ON c.authorId=v.id')->fetchAll();$out['likes']=sql('SELECT * FROM likes')->fetchAll();
         echo json_encode($out,JSON_PRETTY_PRINT|JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE).PHP_EOL;exit;
     }
@@ -25,7 +25,7 @@ try {
         if((int)sql('SELECT count(*) FROM records')->fetchColumn()>0)throw new RuntimeException('Import only into an empty database');
         db()->beginTransaction();$postIds=[];$visitors=[];
         try {
-            saveSetting('profile',profileInput(array_replace(defaultProfile(),$data['profile']??[])));
+            saveSetting('profile',array_replace(profileInput(array_replace(defaultProfile(),$data['profile']??[])),['_musicLibraryInitialized'=>true]));
             foreach(['works','books','gallery','posts'] as $kind)foreach($data[$kind]??[] as $item) {
                 $r=recordInput($kind,$item);$r['createdAt']=$item['createdAt']??now();$r['updatedAt']=$item['updatedAt']??now();if($kind==='posts')$r['publishedAt']=$item['publishedAt']??($r['status']==='published'?now():null);
                 sql('INSERT INTO records(kind,payload) VALUES(?,?)',[$kind,json_encode($r,JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE)]);if($kind==='posts')$postIds[$item['id']]=(int)db()->lastInsertId();

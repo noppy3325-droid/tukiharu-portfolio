@@ -210,6 +210,21 @@
 .device-copy h3 {
   font-size: 1.1rem;
   margin: 12px 0 20px;
+  overflow-wrap: anywhere;
+}
+.device-extra-specs h4 {
+  margin: 18px 0 6px;
+  color: #507484;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.device-extra-specs p,
+.device-note {
+  color: #486878;
+  font-size: 0.8rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .device-copy dl {
   margin: 0;
@@ -462,6 +477,12 @@ summary:focus-visible {
   gap: 20px;
   max-width: 100%;
 }
+.admin-profile-form select {
+  width: 100%;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+}
 .admin-repeat {
   display: grid;
   gap: 16px;
@@ -485,6 +506,35 @@ summary:focus-visible {
 }
 .admin-profile-group h2 {
   font-size: 1.15rem;
+}
+.admin-profile-music {
+  min-width: 0;
+  border-block: 1px solid #d5e6ed;
+}
+.admin-profile-music > summary {
+  padding: 18px 4px;
+  min-height: 56px;
+  cursor: pointer;
+  color: #274b5c;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.admin-profile-music > summary > span:last-child {
+  display: inline-block;
+  margin-left: 12px;
+  color: #507484;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.admin-profile-music > summary:focus-visible {
+  outline: 2px solid #397f9e;
+  outline-offset: 3px;
+}
+.admin-profile-music > .admin-profile-group {
+  border-top: 0;
+  padding-top: 0;
+  padding-bottom: 18px;
 }
 .admin-feedback {
   color: #94556d;
@@ -545,3 +595,8 @@ summary:focus-visible {
     display: none;
   }
 }
+.profile-privacy{margin-top:48px;padding-top:24px;border-top:1px solid var(--gallery-line,#cbdde7);color:var(--gallery-muted,#536f83);font-size:12px;line-height:1.9;overflow-wrap:anywhere}
+.profile-privacy h2{font:500 14px/1.7 "Noto Sans JP",sans-serif;margin:0 0 12px;color:var(--gallery-ink,#21445a)}
+.profile-privacy p{margin:0 0 8px;max-width:80ch}
+.profile-privacy a{text-decoration:underline;text-underline-offset:3px;display:inline-block;padding-block:8px}
+.profile-privacy a:focus-visible{outline:2px solid #39708a;outline-offset:3px}
