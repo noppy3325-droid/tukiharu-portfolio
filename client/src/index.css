@@ -20,6 +20,10 @@
 @import "./portfolio-ui.css";
 @import "./music-library.css";
 @import "./boarding-pass.css";
+@import "./blog-editor.css";
+@import "./locale.css";
+@import "./flux.css";
+@import "./depot-motion.css";
 
 @custom-variant dark (&:is(.dark *));
 

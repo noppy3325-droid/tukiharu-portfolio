@@ -1,0 +1,149 @@
+/* Phase 1: paper, perforations and pencil. Existing theme colors stay intact. */
+:root {
+  --depot-ease: cubic-bezier(.23, 1, .32, 1);
+  --depot-arrive-ms: 220ms;
+  --depot-pencil-ms: 200ms;
+  --depot-lift-px: 8px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tsuki-page.gallery-shell {
+    animation: depot-paper-arrive var(--depot-arrive-ms) var(--depot-ease) both;
+  }
+  /* Release the arrival's filled opacity so the existing 180ms exit can run. */
+  html.page-is-leaving .tsuki-page.gallery-shell { animation: none; }
+}
+@keyframes depot-paper-arrive {
+  from { opacity: 0; transform: translateY(var(--depot-lift-px)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.depot-perforation {
+  width: 100%;
+  height: 0;
+  border: 0;
+  border-top: 2px dashed var(--border);
+  margin: clamp(20px, 3vw, 32px) 0 0;
+}
+.depot-home-heading,
+.gallery-home-info.depot-section,
+.gallery-updates.depot-section {
+  border-top: 2px dashed var(--border);
+}
+.depot-home-heading { border-top: 0; border-bottom: 2px dashed var(--border); }
+.depot-home-heading + .gallery-home-grid {
+  padding-top: clamp(20px, 4vw, 44px);
+}
+.depot-pencil-link {
+  /* Legacy work-link hover rules use a background shorthand. Keep this layer. */
+  background-image: linear-gradient(currentColor, currentColor) !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 100% !important;
+  background-size: 0% 1.5px !important;
+  border-bottom-color: transparent;
+  text-decoration: none;
+  transition: background-size var(--depot-pencil-ms) var(--depot-ease) !important;
+}
+.depot-pencil-link:focus-visible {
+  background-size: 100% 1.5px !important;
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .depot-pencil-link:hover { background-size: 100% 1.5px !important; }
+}
+
+/* Phase 2: a quiet line icon, a drawer shadow, and a single daylight layer. */
+.depot-heading-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+.depot-heading-line h1 { min-width: 0; }
+.depot-heading-icon {
+  flex: 0 0 auto;
+  width: clamp(22px, 2.5vw, 28px);
+  height: clamp(22px, 2.5vw, 28px);
+  color: var(--ui-muted, var(--foreground));
+  opacity: .65;
+}
+.depot-drawer { transition: box-shadow 200ms var(--depot-ease); }
+.gallery-shell :is(.tsuki-work-card, .tsuki-photo-list > article).depot-drawer {
+  padding: clamp(14px, 1.6vw, 20px) !important;
+  border-radius: 6px !important;
+}
+/* Work previews should stay still, and the light must not wash over the copy. */
+.gallery-shell .tsuki-work-card.tilt-card {
+  transform: none !important;
+  transform-style: flat;
+  overflow: visible !important;
+}
+.gallery-shell .tsuki-work-card.tilt-card::after { display: none; }
+.gallery-shell .tsuki-work-card .content-image-thumb,
+.gallery-shell .tsuki-work-card::before {
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
+}
+.gallery-shell .tsuki-photo-list > article.depot-drawer > div {
+  padding: 16px 0 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .gallery-shell .depot-drawer:hover {
+    box-shadow: 0 3px 12px color-mix(in srgb, var(--ui-ink, var(--foreground)) 6%, transparent) !important;
+  }
+  .gallery-shell .gallery-card.depot-drawer:hover .portfolio-card-kind {
+    color: var(--accent-foreground);
+  }
+}
+.tsuki-page[data-depot-light] {
+  --depot-daylight: color-mix(in srgb, var(--card) 94%, var(--tsuki-blue, var(--accent)));
+  background-image: radial-gradient(ellipse at 12% 0%, color-mix(in srgb, var(--depot-daylight) 30%, transparent), transparent 64%) !important;
+}
+.tsuki-page[data-depot-light="day"] {
+  --depot-daylight: color-mix(in srgb, var(--card) 94%, var(--background));
+}
+.tsuki-page[data-depot-light="evening"] {
+  --depot-daylight: color-mix(in srgb, var(--card) 94%, var(--tsuki-pink, var(--accent)));
+}
+
+/* Phase 3: a preparation line and a quiet closing index. */
+.depot-loading-line {
+  display: block;
+  width: min(100%, 220px);
+  height: 2px;
+  margin: 16px auto 0;
+  background: var(--border);
+  transform-origin: left center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .depot-loading-line { animation: depot-prepare 600ms var(--depot-ease) both; }
+}
+@keyframes depot-prepare {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.gallery-footer .depot-footer-index {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--gallery-muted, var(--foreground));
+  font: clamp(8px, 1.1vw, 10px)/1.8 "DM Mono", monospace;
+  letter-spacing: .02em;
+  overflow-wrap: anywhere;
+}
+
+/* Scope the blanket reset to new decorations, never the boarding-pass portal. */
+@media (prefers-reduced-motion: reduce) {
+  .tsuki-page.gallery-shell,
+  html.page-is-leaving .tsuki-page.gallery-shell {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1;
+  }
+  .depot-motion,
+  .depot-motion * {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}

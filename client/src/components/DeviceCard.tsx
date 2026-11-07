@@ -1,3 +1,4 @@
+import { useLocale } from "@/contexts/LocaleContext";
 import React from "react";
 import {
   Box,
@@ -30,6 +31,7 @@ export function DeviceCard({
   device: Device;
   index: number;
 }) {
+  const { t, locale } = useLocale();
   const category = deviceCategoryOf(device.category);
   const Icon = icons[category];
   const computing = hasComputingSpecs(category);
@@ -42,7 +44,7 @@ export function DeviceCard({
       ].filter(([, value]) => value)
     : [];
   return (
-    <article className="device-panel">
+    <article className={device.imageUrl ? "device-panel device-panel-with-image" : "device-panel"}>
       <div className="device-visual">
         {device.imageUrl ? (
           <img loading="lazy" src={device.imageUrl} alt={device.name} />
@@ -52,7 +54,7 @@ export function DeviceCard({
       </div>
       <div className="device-copy">
         <p className="device-status">
-          {deviceCategoryLabels[category]} /{" "}
+          {t(deviceCategoryLabels[category])} /{" "}
           {String(index + 1).padStart(2, "0")}
         </p>
         <h3>{device.name}</h3>
@@ -71,7 +73,7 @@ export function DeviceCard({
         )}
         {device.specifications && (
           <div className="device-extra-specs">
-            <h4>仕様・組み合わせ</h4>
+            <h4>{t("仕様・組み合わせ")}</h4>
             <p>{device.specifications}</p>
           </div>
         )}

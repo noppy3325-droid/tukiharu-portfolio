@@ -34,7 +34,8 @@ web root. The application never sends FTP credentials to the browser.
 ## Requirements
 
 - Apache with `.htaccess` rewriting enabled, serving the domain root.
-- PHP 8.1 or newer with PDO SQLite, GD, DOM/libxml, fileinfo and sessions.
+- PHP 8.3.36 is the current deployment target and has been tested locally.
+  Enable PDO SQLite, GD, DOM/libxml, fileinfo, mbstring and sessions.
   GD WebP support is recommended; PNG/JPEG remain supported without it.
 - HTTPS on the public domain. HTTP is permitted only for localhost development.
 - Writable private database/session directory and public `uploads` directory.
@@ -57,7 +58,7 @@ pnpm build
 ```
 
 The initial-installation directory is `dist/public`. It contains `index.html`,
-hashed frontend assets, the four PHP API files, root `.htaccess`, and
+   hashed frontend assets, the PHP API files, root `.htaccess`, and
 `uploads/.htaccess`. Subsequent releases use **`dist/update`**, which excludes
 the entire `uploads` directory. On Windows, the build also creates
 **`dist/update.zip`** with `.htaccess` included and no enclosing directory.

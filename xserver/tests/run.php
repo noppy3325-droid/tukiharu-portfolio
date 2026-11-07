@@ -5,6 +5,20 @@ $dir=sys_get_temp_dir().'/portfolio-test-'.bin2hex(random_bytes(8));putenv('PORT
 require __DIR__.'/fixture.php';require __DIR__.'/../public/api/bootstrap.php';
 require __DIR__.'/../public/api/procedures.php';
 function check(bool $condition,string $message): void { if(!$condition)throw new RuntimeException($message);echo "PASS: $message\n"; }
+$legacyProfile=defaultProfile();unset($legacyProfile['policy']);$legacyProfile['about']='既存の自己紹介';
+$parsedProfile=profileInput($legacyProfile);
+check($parsedProfile['about']==='既存の自己紹介' && $parsedProfile['policy']==='','Legacy profile keeps introduction and defaults policy to empty');
+$parsedProfile=profileInput(array_replace($legacyProfile,['policy'=>"制作の方針\n発信の方針"]));
+check($parsedProfile['policy']==="制作の方針\n発信の方針" && $parsedProfile['about']==='既存の自己紹介','Policy and introduction remain independent');
+$typographyHtml=sanitizedHtml('<p data-font-size="24" data-line-height="1.8" data-text-align="center">format</p>');
+check(str_contains($typographyHtml,'data-font-size="24"') && str_contains($typographyHtml,'data-line-height="1.8"') && str_contains($typographyHtml,'data-text-align="center"'),'Safe typography survives PHP sanitization');
+$unsafeTypography=sanitizedHtml('<h2 data-font-size="9999" data-line-height="url(javascript:bad)" data-text-align="evil" style="position:fixed">x</h2><img src="/uploads/a.webp" data-font-size="24">');
+check(!preg_match('/data-font-size|data-line-height|data-text-align|style=/',$unsafeTypography),'Invalid typography and formatting on unsupported elements are removed');
+$editorHtml='<h4>小見出し</h4><blockquote><p>引用</p></blockquote><ol start="3"><li><p>三つ目</p></li></ol><p><s>旧文</s> <code>inline</code></p><pre><code class="language-ts">const x = &quot;&lt;script&gt;&quot;;' . "\n  next();" . '</code></pre><hr>';
+$editorClean=sanitizedHtml($editorHtml);
+check(str_contains($editorClean,'<h4>小見出し</h4>') && str_contains($editorClean,'<ol start="3">') && str_contains($editorClean,'<code class="language-ts">') && str_contains($editorClean,'&lt;script&gt;') && str_contains($editorClean,"\n  next();") && str_contains($editorClean,'<hr') && str_contains($editorClean,'<s>旧文</s>'),'Editor blocks, list start and escaped code survive sanitization');
+$unsafeEditor=sanitizedHtml('<h4 onclick="bad()">x</h4><pre style="x"><code class="evil" onmouseover="bad()">safe</code></pre><ol start="javascript:bad()"><li>x</li></ol><hr onmouseover="bad()">');
+check(!preg_match('/onclick|onmouseover|style=|class=|javascript:|start=/',$unsafeEditor),'New editor tags reject active attributes and invalid list start');
 // Departure lookup never contacts the provider during unit checks.
 $calls=[];$lookup=function(string $ip)use(&$calls):array{$calls[]=$ip;return normalizeDeparture(['success'=>true,'city'=>'Tokyo','region'=>'Tokyo','country'=>'Japan','country_code'=>'JP','ip'=>$ip,'latitude'=>35]);};
 foreach(['','bad','127.0.0.1','10.0.0.1','100.64.0.1','169.254.1.1','172.16.1.1','192.168.3.99','192.0.2.1','198.51.100.2','203.0.113.1','224.0.0.1','255.255.255.255','::','::1','fc00::1','fe80::1','ff02::1','2001:db8::1','::ffff:127.0.0.1','::ffff:7f00:1'] as $localIp){

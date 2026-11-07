@@ -1,10 +1,12 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PageTransition } from "@/components/PageTransition";
+import { DepotIntro } from "@/components/DepotIntro";
 import { Route, Switch } from "wouter";
 import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { LocaleProvider, useLocale } from "./contexts/LocaleContext";
 
 const Admin = lazy(() => import("./pages/Admin"));
 const Visitor = lazy(() => import("./pages/Visitor"));
@@ -15,24 +17,36 @@ const Home = lazy(() => import("./pages/Home"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Photos = lazy(() => import("./pages/Photos"));
 const Works = lazy(() => import("./pages/Works"));
+const Flux = lazy(() => import("./pages/Flux"));
+
+function PageLoading() {
+  const { locale } = useLocale();
+  return (
+    <main className="tsuki-page-state">
+      {locale === "ja" ? "ページを準備しています。" : "Loading page…"}
+      <span className="depot-loading-line depot-motion" aria-hidden="true" />
+    </main>
+  );
+}
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
-    <Suspense fallback={<main className="tsuki-page-state">ページを準備しています。</main>}>
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/about"} component={About} />
-      <Route path={"/works"} component={Works} />
-      <Route path={"/photos"} component={Photos} />
-      <Route path={"/blog"} component={Blog} />
-      <Route path={"/blog/:slug"} component={BlogPost} />
-      <Route path={"/admin"} component={Admin} />
-      <Route path={"/visitor"} component={Visitor} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<PageLoading />}>
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path={"/about"} component={About} />
+        <Route path={"/flux"} component={Flux} />
+        <Route path={"/works"} component={Works} />
+        <Route path={"/photos"} component={Photos} />
+        <Route path={"/blog"} component={Blog} />
+        <Route path={"/blog/:slug"} component={BlogPost} />
+        <Route path={"/admin"} component={Admin} />
+        <Route path={"/visitor"} component={Visitor} />
+        <Route path={"/404"} component={NotFound} />
+        {/* Final fallback route */}
+        <Route component={NotFound} />
+      </Switch>
     </Suspense>
   );
 }
@@ -49,11 +63,14 @@ function App() {
         defaultTheme="light"
         // switchable
       >
-        <TooltipProvider>
-          <PageTransition />
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <LocaleProvider>
+          <TooltipProvider>
+            <PageTransition />
+            <Toaster />
+            <Router />
+            <DepotIntro />
+          </TooltipProvider>
+        </LocaleProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

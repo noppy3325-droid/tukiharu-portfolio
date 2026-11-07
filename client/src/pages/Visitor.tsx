@@ -1,8 +1,10 @@
+import { useLocale } from "@/contexts/LocaleContext";
 import { useState } from "react";
 import { TsukiLayout } from "@/components/TsukiLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 export default function Visitor() {
+  const { t, locale } = useLocale();
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -10,10 +12,8 @@ export default function Visitor() {
     <TsukiLayout>
       <section className="profile-section">
         <p className="gallery-section-label">COMMENTS</p>
-        <h1>コメントに使う名前</h1>
-        <p>
-          表示名は本人確認済みのアカウントではありません。このブラウザで投稿したコメントを編集・削除できます。
-        </p>
+        <h1>{t("コメントに使う名前")}</h1>
+        <p>{t("表示名は本人確認済みのアカウントではありません。このブラウザで投稿したコメントを編集・削除できます。")}</p>
         <form
           className="admin-repeat"
           onSubmit={async e => {
@@ -32,7 +32,7 @@ export default function Visitor() {
               });
               const result = await response.json();
               if (result.error) throw new Error(result.error.json.message);
-              if (!response.ok) throw new Error("名前を登録できませんでした。");
+              if (!response.ok) throw new Error(t("名前を登録できませんでした。"));
               const target =
                 new URLSearchParams(location.search).get("return") || "/";
               location.assign(
@@ -44,14 +44,14 @@ export default function Visitor() {
               );
             } catch (err) {
               setError(
-                err instanceof Error ? err.message : "登録できませんでした。"
+                err instanceof Error ? err.message : t("登録できませんでした。")
               );
               setBusy(false);
             }
           }}
         >
           <label className="admin-field">
-            <span>表示名</span>
+            <span>{t("表示名")}</span>
             <Input
               required
               maxLength={80}
@@ -61,7 +61,7 @@ export default function Visitor() {
             />
           </label>
           <Button disabled={busy}>
-            {busy ? "登録中…" : "この名前でコメントする"}
+            {busy ? t("登録中…") : t("この名前でコメントする")}
           </Button>
           {error && <p role="alert">{error}</p>}
         </form>

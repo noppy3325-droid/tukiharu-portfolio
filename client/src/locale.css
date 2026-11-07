@@ -1,0 +1,45 @@
+.portfolio-language {
+  margin-left: auto;
+  flex: 0 0 auto;
+  max-width: 100px;
+  min-height: 44px;
+  padding: 7px 4px;
+  border: 1px solid #c7dce4;
+  border-radius: 5px;
+  background: #f9fcfd;
+  color: #254957;
+  font:
+    12px/1.4 system-ui,
+    sans-serif;
+  cursor: pointer;
+}
+.portfolio-language:focus-visible {
+  outline: 2px solid #4b879e;
+  outline-offset: 3px;
+}
+html[lang="en"] .gallery-shell {
+  overflow-wrap: anywhere;
+}
+html[lang="en"] .gallery-mobile-link-description {
+  line-height: 1.5;
+}
+@media (max-width: 430px) {
+  .gallery-header {
+    gap: 8px;
+  }
+  .gallery-header .gallery-brand {
+    flex: 0 1 120px;
+    min-width: 0;
+  }
+  .gallery-header .gallery-brand-logo {
+    width: 120px;
+  }
+  .portfolio-language {
+    width: 76px;
+    font-size: 11px;
+  }
+  .gallery-header .gallery-mobile-menu {
+    padding-inline: 8px;
+    gap: 5px;
+  }
+}

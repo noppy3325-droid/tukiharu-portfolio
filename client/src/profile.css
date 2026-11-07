@@ -200,6 +200,26 @@
 .device-copy {
   padding: 25px;
 }
+.device-panel-with-image .device-visual {
+  height: clamp(190px, 30vw, 300px);
+  position: relative;
+}
+.device-panel-with-image .device-visual img {
+  position: absolute;
+  inset: 0;
+}
+.device-panel-with-image .device-visual::after {
+  content: "";
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(to bottom, transparent, #fff);
+  pointer-events: none;
+}
+.device-panel-with-image .device-copy {
+  position: relative;
+  margin-top: -18px;
+  background: #fff;
+}
 .device-status {
   font:
     0.62rem "DM Mono",

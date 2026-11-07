@@ -17,6 +17,7 @@ export const profileSchema = z.object({
   headline: text.max(300),
   avatarUrl: url,
   about: z.string().max(12000),
+  policy: z.string().max(12000).default(""),
   githubUrl: url,
   xUrl: url,
   skills: z.array(text.max(100)).max(60),

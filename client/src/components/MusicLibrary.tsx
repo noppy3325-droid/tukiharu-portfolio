@@ -1,11 +1,13 @@
+import { useLocale } from "@/contexts/LocaleContext";
 import type { MusicItem } from "@shared/profile";
 import React from "react";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 
 export function MusicLibrary({ items }: { items: MusicItem[] }) {
+  const { t, locale } = useLocale();
   const groups = new Map<string, MusicItem[]>();
   for (const item of items) {
-    const artist = item.artist.trim() || "アーティスト未登録";
+    const artist = item.artist.trim() || t("アーティスト未登録");
     const tracks = groups.get(artist) ?? [];
     tracks.push(item);
     groups.set(artist, tracks);
@@ -20,9 +22,7 @@ export function MusicLibrary({ items }: { items: MusicItem[] }) {
   return (
     <div className="listening-library">
       <p className="listening-caption">
-        {items.length}曲 / {artists.length}
-        組。アーティスト名を開くと曲一覧が見られます。
-      </p>
+        {items.length}{t("曲 /")}{artists.length}{t("組。アーティスト名を開くと曲一覧が見られます。")}</p>
       <div className="listening-artists">
         {columns.map((column, columnIndex) => (
           <div className="listening-column" key={columnIndex}>
@@ -36,10 +36,10 @@ export function MusicLibrary({ items }: { items: MusicItem[] }) {
                         .slice(0, 3)
                         .map(track => track.title)
                         .join("、")}
-                      {tracks.length > 3 && " ほか"}
+                      {tracks.length > 3 && t("ほか")}
                     </span>
                   </span>
-                  <span className="listening-count">{tracks.length}曲</span>
+                  <span className="listening-count">{tracks.length}{t("曲")}</span>
                   <ChevronDown size={18} aria-hidden="true" />
                 </summary>
                 <ol className="listening-tracks">
@@ -68,9 +68,9 @@ export function MusicLibrary({ items }: { items: MusicItem[] }) {
                           href={track.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          aria-label={`${track.title} / ${artist}：${linkLabel(track.url)}（新しいタブ）`}
+                          aria-label={`${track.title} / ${artist}：${t(linkLabel(track.url))}（新しいタブ）`}
                         >
-                          {linkLabel(track.url)}
+                          {t(linkLabel(track.url))}
                           <ArrowUpRight size={14} aria-hidden="true" />
                         </a>
                       )}

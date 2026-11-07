@@ -7,6 +7,7 @@ export function canFadeNavigate(
   anchor: HTMLAnchorElement,
   url: URL
 ) {
+  const current = new URL(window.location.href);
   return (
     event.button === 0 &&
     !event.defaultPrevented &&
@@ -19,6 +20,7 @@ export function canFadeNavigate(
     !anchor.hasAttribute("data-page-transition-off") &&
     url.origin === window.location.origin &&
     url.href !== window.location.href &&
+    (url.pathname !== current.pathname || url.search !== current.search) &&
     !window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
 }
@@ -26,6 +28,7 @@ export function canFadeNavigate(
 export function PageTransition() {
   useEffect(() => {
     document.documentElement.classList.remove("page-is-leaving");
+    let navigationTimer: number | undefined;
 
     const handleClick = (event: MouseEvent) => {
       const target = event.target;
@@ -37,18 +40,23 @@ export function PageTransition() {
       if (!canFadeNavigate(event, anchor, url)) return;
 
       event.preventDefault();
+      if (navigationTimer !== undefined) return;
       document.documentElement.classList.add("page-is-leaving");
-      window.setTimeout(
+      navigationTimer = window.setTimeout(
         () => window.location.assign(url.href),
         EXIT_DURATION_MS
       );
     };
 
-    const clearLeavingState = () =>
+    const clearLeavingState = () => {
+      window.clearTimeout(navigationTimer);
+      navigationTimer = undefined;
       document.documentElement.classList.remove("page-is-leaving");
+    };
     document.addEventListener("click", handleClick);
     window.addEventListener("pageshow", clearLeavingState);
     return () => {
+      clearLeavingState();
       document.removeEventListener("click", handleClick);
       window.removeEventListener("pageshow", clearLeavingState);
     };

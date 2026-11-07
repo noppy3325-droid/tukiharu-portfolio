@@ -113,6 +113,7 @@ temp/
 client/public/__manus__/version.json
 .project-config.json
 # XServer private data, local QA tools, exports and deployment builds
+/xserver/config.php
 .tools/
 xserver/portfolio-private/
 dist/

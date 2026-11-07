@@ -29,10 +29,10 @@ export const exposureFields = [
   ["iso", "ISO感度", "400"],
 ] as const;
 
-export function galleryDetailSummary(details: GalleryDetailFields): string {
+export function galleryDetailSummary(details: GalleryDetailFields, locale = "ja-JP"): string {
   const date = details.takenAt ? new Date(details.takenAt) : null;
   const takenAt = date && Number.isFinite(date.getTime())
-    ? new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium", timeStyle: "medium" }).format(date) : "";
+    ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "medium" }).format(date) : "";
   return [takenAt, details.camera, details.lens, details.focalLength, details.aperture, details.shutterSpeed, details.iso ? `ISO ${details.iso}` : "", details.location].filter(Boolean).join(" · ");
 }
 

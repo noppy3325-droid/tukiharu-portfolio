@@ -34,6 +34,7 @@ export type Profile = {
   headline: string;
   avatarUrl: string;
   about: string;
+  policy?: string;
   githubUrl: string;
   xUrl: string;
   skills: string[];
@@ -50,6 +51,7 @@ export const defaultProfile: Profile = {
   headline: "つくる、撮る、日々を残す。",
   avatarUrl: "",
   about: "",
+  policy: "",
   githubUrl: "",
   xUrl: "",
   skills: [],

@@ -93,7 +93,7 @@ function safeUrl(string $url, bool $local = true, bool $mailto = false): bool {
 }
 function urlValue(array $input, string $key, bool $local = true): string { $value = textValue($input,$key,2048); if (!safeUrl($value,$local)) fail($key . 'はHTTPSまたはアップロード済みURLを入力してください。'); return $value; }
 function idValue(array $input): int { $id = $input['id'] ?? 0; if (!is_int($id) || $id < 1) fail('IDを確認してください。'); return $id; }
-function defaultProfile(): array { return ['introduction'=>'つくったもの、写真、読んだもの、日々の記録をまとめています。','name'=>'月春','headline'=>'つくる、撮る、日々を残す。','avatarUrl'=>'','about'=>'','githubUrl'=>'','xUrl'=>'','skills'=>[],'interests'=>[],'personal'=>[],'devices'=>[],'music'=>[],'activities'=>[],'links'=>[]]; }
+function defaultProfile(): array { return ['introduction'=>'つくったもの、写真、読んだもの、日々の記録をまとめています。','name'=>'月春','headline'=>'つくる、撮る、日々を残す。','avatarUrl'=>'','about'=>'','policy'=>'','githubUrl'=>'','xUrl'=>'','skills'=>[],'interests'=>[],'personal'=>[],'devices'=>[],'music'=>[],'activities'=>[],'links'=>[]]; }
 function publicProfile(): array {
     $stored = setting('profile', []);
     $profile = array_replace(defaultProfile(), $stored);
@@ -108,7 +108,7 @@ function publicProfile(): array {
 }
 function profileInput(array $input): array {
     $result = [];
-    foreach (['name'=>160,'headline'=>300,'introduction'=>3000,'about'=>12000] as $key=>$max) $result[$key] = textValue($input,$key,$max,in_array($key,['name','introduction']));
+    foreach (['name'=>160,'headline'=>300,'introduction'=>3000,'about'=>12000,'policy'=>12000] as $key=>$max) $result[$key] = textValue($input,$key,$max,in_array($key,['name','introduction']));
     foreach (['avatarUrl','githubUrl','xUrl'] as $key) $result[$key] = urlValue($input,$key,$key === 'avatarUrl');
     foreach (['skills'=>60,'personal'=>30,'interests'=>20,'devices'=>20,'music'=>200,'activities'=>200,'links'=>30] as $key=>$max) {
         $values = $input[$key] ?? []; if (!is_array($values) || !array_is_list($values) || count($values)>$max) fail($key . 'の項目数を確認してください。');
@@ -146,7 +146,7 @@ function sanitizedHtml(string $html): string {
     $doc=new DOMDocument(); $old=libxml_use_internal_errors(true);
     $doc->loadHTML('<?xml encoding="UTF-8"><div id="portfolio-body">'.$html.'</div>', LIBXML_NONET | LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD); libxml_clear_errors(); libxml_use_internal_errors($old);
     $root=$doc->getElementById('portfolio-body'); if(!$root)return '';
-    $allowed=['p','br','strong','b','em','i','h2','h3','ul','ol','li','blockquote','a','img'];
+    $allowed=['p','br','strong','b','em','i','s','del','h2','h3','h4','ul','ol','li','blockquote','pre','code','hr','a','img'];
     $clean=function(DOMNode $node) use (&$clean,$allowed) {
         foreach(iterator_to_array($node->childNodes) as $child) {
             if($child instanceof DOMComment || $child instanceof DOMProcessingInstruction) { $node->removeChild($child);continue; }
@@ -156,7 +156,13 @@ function sanitizedHtml(string $html): string {
             $clean($child);
             if(!in_array($tag,$allowed)){while($child->firstChild)$node->insertBefore($child->firstChild,$child);$node->removeChild($child);continue;}
             foreach(iterator_to_array($child->attributes) as $attr) {
-                $valid = in_array($attr->name, $tag==='a'?['href','title']:($tag==='img'?['src','alt','title','width','height']:[]));
+                $valid = in_array($attr->name, $tag==='a'?['href','title']:($tag==='img'?['src','alt','title','width','height']:($tag==='ol'?['start']:($tag==='code'?['class']:[]))));
+                if(in_array($tag,['p','h2','h3','h4'],true)) {
+                    $typography=['data-font-size'=>['14','16','18','20','24','28','32'],'data-line-height'=>['1.4','1.6','1.8','2','2.2','2.5'],'data-text-align'=>['left','center','right']];
+                    $valid=isset($typography[$attr->name]) && in_array($attr->value,$typography[$attr->name],true);
+                }
+                if($attr->name==='start')$valid=$valid && (bool)preg_match('/^[0-9]{1,4}$/D',$attr->value);
+                if($attr->name==='class')$valid=$valid && (bool)preg_match('/^language-[a-zA-Z0-9_-]{1,40}$/D',$attr->value);
                 if(in_array($attr->name,['href','src'])) $valid=$valid && $attr->value!=='' && safeUrl($attr->value,true,$tag==='a');
                 if(in_array($attr->name,['width','height']))$valid=$valid && ctype_digit($attr->value) && (int)$attr->value<=4096;
                 if(!$valid)$child->removeAttribute($attr->name);

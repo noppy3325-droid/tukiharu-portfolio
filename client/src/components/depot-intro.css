@@ -1,0 +1,72 @@
+.depot-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  pointer-events: auto;
+}
+.depot-intro-art {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--background);
+  animation: depot-intro-reveal 3200ms both;
+}
+.depot-intro-frame {
+  position: relative;
+  width: var(--scene-width);
+  height: var(--scene-height);
+  transform-origin: var(--screen-origin);
+  animation:
+    depot-intro-scene-in 200ms ease-out both,
+    depot-intro-zoom 1400ms cubic-bezier(.7, 0, .84, 0) 1200ms both;
+}
+.depot-intro-frame img, .depot-intro-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.depot-intro-frame .depot-intro-character {
+  transform-origin: 50% 92%;
+  animation: depot-intro-sway 1200ms ease-in-out both;
+}
+.depot-intro-monitor-light {
+  position: absolute;
+  background: var(--background);
+}
+.depot-intro-monitor-light::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse, #fff7, transparent);
+  animation: depot-intro-glow 1200ms ease-out both;
+}
+.depot-intro-cover {
+  background: var(--background);
+  animation: depot-intro-cover 300ms ease-out 2600ms both;
+}
+html.depot-intro-played .tsuki-page.gallery-shell { animation: none; }
+html.depot-intro-active:has(.portfolio-skip-link:focus-visible) .depot-intro-art { visibility: hidden; }
+
+@keyframes depot-intro-reveal {
+  0%, 93.125% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes depot-intro-scene-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes depot-intro-zoom {
+  to { transform: translate(var(--screen-dx), var(--screen-dy)) scale(var(--screen-zoom)); }
+}
+@keyframes depot-intro-sway {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(.6deg); }
+}
+@keyframes depot-intro-glow {
+  from { opacity: .15; }
+  to { opacity: 0; }
+}
+@keyframes depot-intro-cover { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .depot-intro { display: none; }
+}

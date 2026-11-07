@@ -197,7 +197,7 @@ try {
     slug: "qa-note",
     excerpt: "ローカル確認用の記事。",
     content:
-      '<p>日本語の本文<img src="javascript:alert(1)"><script>bad()</script></p>',
+      '<h4>小見出し</h4><p>日本語の本文<img src="javascript:alert(1)"><script>bad()</script></p><ol start="3"><li><p>三つ目</p></li></ol><pre><code class="language-ts">const x = &lt;tag&gt;;\n  keepIndent();</code></pre><hr>',
     coverColor: "mint",
     status: "draft",
   };
@@ -215,6 +215,10 @@ try {
   });
   const published = await g.blog.bySlug.query({ slug: "qa-note" });
   assert(!published.content.includes("script"));
+  assert(published.content.includes('<h4>小見出し</h4>'));
+  assert(published.content.includes('<ol start="3">'));
+  assert(published.content.includes('<code class="language-ts">'));
+  assert(published.content.includes("\n  keepIndent();"));
   assert(published.publishedAt instanceof Date);
   await expectError(
     () => a.admin.blog.posts.create.mutate({ ...post, status: "published" }),

@@ -1,3 +1,4 @@
+import { useLocale } from "@/contexts/LocaleContext";
 import { Camera } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
@@ -14,6 +15,7 @@ import {
 
 
 export default function Photos() {
+  const { t, locale } = useLocale();
   const photos = trpc.content.gallery.list.useQuery(undefined, {
     retry: false,
     staleTime: 60_000,
@@ -42,24 +44,20 @@ export default function Photos() {
   return (
     <TsukiLayout>
       <PortfolioHeading
-        eyebrow="GALLERY / 写真の記録"
+        eyebrow={t("GALLERY / 写真の記録")}
         title="Gallery"
-        description="目にとまった風景、日々の断片。写真を選ぶと大きく表示できます。"
+        description={t("目にとまった風景、日々の断片。写真を選ぶと大きく表示できます。")}
       />
-      <section className="tsuki-photo-list" aria-label="写真Gallery">
+      <section className="tsuki-photo-list" aria-label={t("写真Gallery")}>
         {photos.isError ? (
           <div className="tsuki-empty tsuki-glass" role="alert">
             <Camera size={25} />
-            <p>
-              Galleryを取得できませんでした。ページを再読み込みしてください。
-            </p>
-            <button type="button" onClick={() => window.location.reload()}>
-              ページを再読み込み
-            </button>
+            <p>{t("Galleryを取得できませんでした。ページを再読み込みしてください。")}</p>
+            <button type="button" onClick={() => window.location.reload()}>{t("ページを再読み込み")}</button>
           </div>
         ) : visiblePhotos.length ? (
           visiblePhotos.map(photo => (
-            <article className="tsuki-glass" key={photo.id}>
+            <article className="tsuki-glass depot-drawer depot-motion" key={photo.id}>
               <button
                 type="button"
                 className="tsuki-gallery-image-trigger"
@@ -67,7 +65,7 @@ export default function Photos() {
                   photoTriggerRef.current = event.currentTarget;
                   setSelectedPhoto(photo);
                 }}
-                aria-label={`${photo.title}を拡大表示`}
+                aria-label={locale === "ja" ? `${photo.title}を拡大表示` : `Enlarge ${photo.title}`}
               >
                 <img
                   src={photo.imageUrl}
@@ -78,16 +76,14 @@ export default function Photos() {
                   onContextMenu={preventImageSave}
                   onDragStart={preventImageSave}
                 />
-                <span className="portfolio-photo-expand" aria-hidden="true">
-                  拡大 ↗
-                </span>
+                <span className="portfolio-photo-expand" aria-hidden="true">{t("拡大 ↗")}</span>
               </button>
               <div>
                 <h2>{photo.title}</h2>
                 <p>{photo.caption}</p>
                 {hasGalleryDetails(photo) && (
                   <small>
-                    {galleryDetailSummary(photo)}
+                    {galleryDetailSummary(photo, locale)}
                   </small>
                 )}
               </div>
@@ -115,11 +111,9 @@ export default function Photos() {
           onContextMenu={preventImageSave}
         >
           <DialogTitle className="sr-only">
-            {selectedPhoto?.title ?? "画像の拡大表示"}
+            {selectedPhoto?.title ?? t("画像の拡大表示")}
           </DialogTitle>
-          <DialogDescription className="sr-only">
-            Escapeキー、閉じるボタン、または背景を選択すると拡大表示を閉じます。
-          </DialogDescription>
+          <DialogDescription className="sr-only">{t("Escapeキー、閉じるボタン、または背景を選択すると拡大表示を閉じます。")}</DialogDescription>
           {selectedPhoto && (
             <>
               <div className="tsuki-gallery-image-viewer">
@@ -133,7 +127,7 @@ export default function Photos() {
               </div>
               <div className="tsuki-gallery-image-caption">
                 <strong>{selectedPhoto.title}</strong>
-                <span>{selectedPhoto.caption}</span>{hasGalleryDetails(selectedPhoto) && <small>{galleryDetailSummary(selectedPhoto)}</small>}
+                <span>{selectedPhoto.caption}</span>{hasGalleryDetails(selectedPhoto) && <small>{galleryDetailSummary(selectedPhoto, locale)}</small>}
               </div>
             </>
           )}

@@ -1,3 +1,4 @@
+import { useLocale } from "@/contexts/LocaleContext";
 import {
   Sheet,
   SheetContent,
@@ -10,25 +11,41 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import portfolioLogo from "@/assets/tsukiharu-logo.svg";
+import { SITE_PUBLISHED_AT, SITE_PUBLISHED_LABEL } from "@shared/site";
+import {
+  navigationItems,
+  getNavigationItem,
+  isNavigationCurrent,
+  getPageTitle,
+} from "@/lib/navigation";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
-const navigationItems = [
-  { href: "/", label: "Home", description: "作品と日々の記録をひとつに" },
-  {
-    href: "/works",
-    label: "Works",
-    description: "つくったものと制作の記録",
-  },
-  { href: "/photos", label: "Gallery", description: "写真で残した景色と瞬間" },
-  { href: "/blog", label: "Blog", description: "考えたこと、日々の記録" },
-  { href: "/about", label: "About", description: "月春について、好きなもの" },
-];
-
-export function TsukiLayout({ children }: { children: ReactNode }) {
+export function TsukiLayout({
+  children,
+  variant,
+  title,
+}: {
+  children: ReactNode;
+  variant?: "flux";
+  title?: string;
+}) {
+  const { t, locale, preference, setPreference } = useLocale();
   const [menuOpen, setMenuOpen] = useState(false);
   const [location] = useLocation();
+  const currentPage =
+    getNavigationItem(location)?.label ??
+    (location === "/visitor" ? "Visitor" : "404");
+  usePageTitle(title ?? getPageTitle(location, locale));
+  const [depotLight] = useState(() => {
+    const hour = new Date().getHours();
+    return hour >= 6 && hour < 11
+      ? "morning"
+      : hour >= 11 && hour < 17
+        ? "day"
+        : "evening";
+  });
   const desktopNavigation = useRef<HTMLElement>(null);
-  const isCurrent = (href: string) =>
-    location === href || (href !== "/" && location.startsWith(`${href}/`));
+  const isCurrent = (href: string) => isNavigationCurrent(location, href);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -45,29 +62,42 @@ export function TsukiLayout({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <main className="tsuki-page gallery-shell">
+    <main
+      className={`tsuki-page gallery-shell${variant === "flux" ? " flux-shell" : ""}`}
+      data-depot-light={depotLight}
+    >
       <a
         className="portfolio-skip-link"
         href="#portfolio-content"
         data-page-transition-off
       >
-        本文へ移動
+        {t("本文へ移動")}
       </a>
       <header className="gallery-header">
         <a href="/" data-page-transition-off className="gallery-brand">
           <img
             className="gallery-brand-logo"
             src={portfolioLogo}
-            alt="月春の資材置き場"
+            alt={t("月春の資材置き場")}
             width={226}
             height={112}
             decoding="async"
           />
         </a>
+        <select
+          className="portfolio-language"
+          aria-label="Language / 言語"
+          value={preference}
+          onChange={event => setPreference(event.target.value)}
+        >
+          <option value="auto">Auto</option>
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+        </select>
         <nav
           ref={desktopNavigation}
           className="gallery-desktop-nav"
-          aria-label="メインナビゲーション"
+          aria-label={t("メインナビゲーション")}
         >
           {navigationItems.map(item => (
             <a
@@ -85,7 +115,9 @@ export function TsukiLayout({ children }: { children: ReactNode }) {
             <button
               type="button"
               className="gallery-mobile-menu"
-              aria-label={menuOpen ? "メニューを閉じる" : "メニューを開く"}
+              aria-label={
+                menuOpen ? t("メニューを閉じる") : t("メニューを開く")
+              }
               aria-expanded={menuOpen}
               aria-controls="gallery-mobile-navigation"
             >
@@ -125,17 +157,17 @@ export function TsukiLayout({ children }: { children: ReactNode }) {
                 TSUKIHARU / PORTFOLIO
               </p>
               <SheetTitle className="gallery-menu-identity">
-                月春の資材置き場
+                {t("月春の資材置き場")}
               </SheetTitle>
               <SheetDescription className="gallery-menu-caption">
-                気になる場所から、どうぞ。
+                {t("気になる場所から、どうぞ。")}
               </SheetDescription>
             </SheetHeader>
             <button
               type="button"
               className="gallery-menu-close"
               onClick={() => setMenuOpen(false)}
-              aria-label="メニューを閉じる"
+              aria-label={t("メニューを閉じる")}
             >
               <span className="menu-morph" data-open="true" aria-hidden="true">
                 <i />
@@ -143,7 +175,10 @@ export function TsukiLayout({ children }: { children: ReactNode }) {
                 <i />
               </span>
             </button>
-            <nav className="gallery-mobile-nav" aria-label="モバイルメニュー">
+            <nav
+              className="gallery-mobile-nav"
+              aria-label={t("モバイルメニュー")}
+            >
               {navigationItems.map((item, index) => (
                 <a
                   href={item.href}
@@ -169,7 +204,7 @@ export function TsukiLayout({ children }: { children: ReactNode }) {
                       id={`mobile-navigation-description-${index}`}
                       className="gallery-mobile-link-description"
                     >
-                      {item.description}
+                      {t(item.description)}
                     </span>
                   </span>
                   {isCurrent(item.href) ? (
@@ -177,7 +212,7 @@ export function TsukiLayout({ children }: { children: ReactNode }) {
                       className="gallery-mobile-link-current"
                       aria-hidden="true"
                     >
-                      現在地
+                      {t("現在地")}
                     </span>
                   ) : (
                     <ArrowRight
@@ -197,10 +232,12 @@ export function TsukiLayout({ children }: { children: ReactNode }) {
                 href="mailto:tukiharu3325+portfolio@gmail.com"
                 onClick={() => setMenuOpen(false)}
               >
-                <span>メールで連絡する</span>
+                <span>{t("メールで連絡する")}</span>
                 <ArrowUpRight size={18} aria-hidden="true" />
               </a>
-              <p className="gallery-menu-caption">ご感想やご相談、お気軽に。</p>
+              <p className="gallery-menu-caption">
+                {t("ご感想やご相談、お気軽に。")}
+              </p>
             </div>
           </SheetContent>
         </Sheet>
@@ -212,6 +249,7 @@ export function TsukiLayout({ children }: { children: ReactNode }) {
         <span>
           © tsukiharu depot{" "}
           <a
+            className="depot-pencil-link depot-motion"
             href="https://github.com/noppy3325-droid/tukiharu-portfolio/blob/main/README.md"
             target="_blank"
             rel="noopener noreferrer"
@@ -222,6 +260,10 @@ export function TsukiLayout({ children }: { children: ReactNode }) {
         <a href="/about" data-page-transition-off>
           About me
         </a>
+        <p className="depot-footer-index">
+          TSUKIHARU DEPOT — ARCHIVE / {currentPage} ·{" "}
+          <time dateTime={SITE_PUBLISHED_AT}>{SITE_PUBLISHED_LABEL}</time>
+        </p>
       </footer>
     </main>
   );

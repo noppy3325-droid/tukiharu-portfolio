@@ -1,0 +1,18 @@
+{
+  "width": 2560,
+  "height": 1440,
+  "screen": {
+    "x": 56.6875,
+    "y": 19.666666666666664,
+    "w": 30,
+    "h": 34.333333333333336
+  },
+  "pivot": {
+    "x": 24.760625,
+    "y": 100
+  },
+  "room": "landscape-room.webp",
+  "desk": "landscape-desk.webp",
+  "monitor": "landscape-monitor.webp",
+  "character": "landscape-character.webp"
+}

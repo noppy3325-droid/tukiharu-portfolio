@@ -1,3 +1,4 @@
+import { createClientId } from "@/lib/clientId";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,19 +100,28 @@ export function ProfileEditor() {
     setError("");
   };
   const field = (
-    key: "name" | "headline" | "introduction" | "about" | "githubUrl" | "xUrl",
+    key:
+      | "name"
+      | "headline"
+      | "introduction"
+      | "about"
+      | "policy"
+      | "githubUrl"
+      | "xUrl",
     label: string,
     multiline = false
   ) => (
     <Field label={label}>
       {multiline ? (
         <Textarea
-          rows={key === "about" ? 8 : 3}
-          value={p[key]}
+          aria-label={label}
+          rows={key === "about" || key === "policy" ? 8 : 3}
+          value={p[key] ?? ""}
           onChange={e => patch({ [key]: e.target.value })}
         />
       ) : (
         <Input
+          aria-label={label}
           value={p[key]}
           onChange={e => patch({ [key]: e.target.value })}
         />
@@ -166,6 +176,10 @@ export function ProfileEditor() {
       />
       {field("introduction", "短い自己紹介（Homeにも表示）", true)}
       {field("about", "詳しい自己紹介", true)}
+      {field("policy", "方針・大切にしていること", true)}
+      <p className="admin-form-help">
+        自己紹介には経歴や人となりを、方針には制作・発信で大切にしていることを書けます。現在の自己紹介の文章はそのまま残しています。
+      </p>
       <div className="form-two">
         {field("githubUrl", "GitHub URL")}
         {field("xUrl", "X URL")}
@@ -406,7 +420,7 @@ export function ProfileEditor() {
             activities: [
               ...p.activities,
               {
-                id: crypto.randomUUID(),
+                id: createClientId(),
                 date: new Date().toISOString().slice(0, 10),
                 title: "",
                 description: "",

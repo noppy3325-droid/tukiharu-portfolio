@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="1800" viewBox="0 0 1600 900"><defs>
+  <linearGradient id="wall" x2="1" y2="1"><stop stop-color="#e9f2f3"/><stop offset="1" stop-color="#cbdfe8"/></linearGradient>
+  <linearGradient id="glass" x2="1" y2="1"><stop stop-color="#fffaf0"/><stop offset="1" stop-color="#d3eaf3"/></linearGradient>
+  <linearGradient id="wood" x2="0" y2="1"><stop stop-color="#f1e5cf"/><stop offset="1" stop-color="#d9c4a6"/></linearGradient>
+  <radialGradient id="sun"><stop stop-color="#fffaf0" stop-opacity=".82"/><stop offset="1" stop-color="#fffaf0" stop-opacity="0"/></radialGradient>
+</defs><g id="room">
+    <rect x="0" y="0" width="1600" height="900" rx="0" fill="url(#wall)"/>
+    <rect x="0" y="711" width="1600" height="189" rx="0" fill="#e9dfd2"/>
+    <rect x="0" y="701" width="1600" height="13" rx="0" fill="#f4ede4"/>
+    <ellipse cx="1280" cy="323" rx="495" ry="420" fill="url(#sun)"/>
+    <rect x="1122" y="35" width="316" height="296" rx="6" fill="#fcf7ee"/>
+    <rect x="1130" y="43" width="300" height="280" rx="3" fill="url(#glass)"/>
+    <rect x="1277" y="43" width="6" height="280" rx="0" fill="#fff9ed"/>
+    <rect x="1130" y="177.4" width="300" height="6" rx="0" fill="#fff9ed"/>
+    <path d="M1130 295L1355 43h36l-228 280z" fill="#fff" opacity=".35"/>
+    <g transform="translate(128 207)">
+      <rect x="0" y="116" width="212" height="12" rx="3" fill="#cdbda9"/>
+      <rect x="15" y="43" width="20" height="73" rx="3" fill="#b8cfd8"/>
+      <rect x="39" y="28" width="26" height="88" rx="3" fill="#e6c6c2"/>
+      <rect x="70" y="50" width="19" height="66" rx="3" fill="#e5d3a9"/>
+      <path d="M150 83q-24-17-18-57m22 56q15-27 11-51m-13 45q-2-29-12-35" fill="none" stroke="#91acaa" stroke-width="4"/>
+      <g fill="#a8c4c0"><ellipse cx="127" cy="29" rx="13" ry="7" transform="rotate(29 127 29)"/><ellipse cx="169" cy="32" rx="14" ry="7" transform="rotate(-22 169 32)"/><ellipse cx="137" cy="47" rx="13" ry="6"/><ellipse cx="162" cy="52" rx="13" ry="6"/></g>
+      <path d="M131 80h41l-6 36h-29z" fill="#d9b4a4"/>
+    </g></g><g id="desk">
+    <path d="M637 787h23v900h-23z M1527 798h23v900h-23z" fill="#aa9780"/>
+    <path d="M552 580h1060l54 230H482z" fill="url(#wood)"/>
+    <path d="M482 810h1184v20H482z" fill="#c2ac92"/>
+    <g transform="translate(921.4 645) skewX(-16)">
+      <rect x="0" y="0" width="268.8" height="52" rx="8" fill="#3b4147"/>
+      <rect x="10" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="34.48" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="58.959999999999994" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="83.44" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="107.91999999999999" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="132.39999999999998" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="156.88" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="181.35999999999999" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="205.83999999999997" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="230.32" y="8" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="10" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="34.48" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="58.959999999999994" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="83.44" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="107.91999999999999" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="132.39999999999998" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="156.88" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="181.35999999999999" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="205.83999999999997" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="230.32" y="20" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="10" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="34.48" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="58.959999999999994" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="83.44" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="107.91999999999999" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="132.39999999999998" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="156.88" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="181.35999999999999" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="205.83999999999997" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/><rect x="230.32" y="32" width="18.24" height="8" rx="1" fill="#646a6e"/>
+    </g>
+    <g transform="translate(1281.4 660)">
+      <rect x="-13" y="49" width="180" height="19" rx="4" fill="#afc6d1"/><rect x="4" y="34" width="160" height="17" rx="3" fill="#f0dbb5"/>
+      <rect x="-4" y="17" width="181" height="18" rx="3" fill="#e3bbbc"/><rect x="3" y="0" width="153" height="18" rx="3" fill="#aec4ce"/>
+      <g transform="translate(14 64)">
+        <rect x="1" y="5" width="98" height="59" rx="7" fill="#3b4249"/><rect x="13" y="0" width="30" height="12" rx="4" fill="#535c63"/>
+        <circle cx="48" cy="36" r="24" fill="#272d33"/><circle cx="48" cy="36" r="15" fill="#536773"/><circle cx="45" cy="33" r="7" fill="#8197a4"/>
+        <rect x="73" y="14" width="14" height="8" rx="2" fill="#d8dedc"/>
+      </g>
+    </g></g><g id="screen-preview"><rect x="907" y="177" width="480" height="309" rx="0" fill="#fff7e6"/></g><g id="monitor">
+    <path d="M1127.8 486h38.4v113h-38.4z" fill="#3d454d"/>
+    <rect x="1046.2" y="592" width="201.6" height="18" rx="7" fill="#495158"/>
+    <path fill="#30373f" fill-rule="evenodd" d="M893 163h508v342H893z M907 177h480v309H907z"/>
+    <circle cx="1375" cy="496" r="2" fill="#accbd0"/></g><g id="character"><image href="hazuki.png" x="37" y="53" width="733" height="990"/></g></svg>

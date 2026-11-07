@@ -1,0 +1,18 @@
+{
+  "width": 1440,
+  "height": 1920,
+  "screen": {
+    "x": 43.77777777777778,
+    "y": 21.416666666666668,
+    "w": 46.88888888888889,
+    "h": 23.75
+  },
+  "pivot": {
+    "x": 28.59777777777778,
+    "y": 93.5875
+  },
+  "room": "portrait-room.webp",
+  "desk": "portrait-desk.webp",
+  "monitor": "portrait-monitor.webp",
+  "character": "portrait-character.webp"
+}

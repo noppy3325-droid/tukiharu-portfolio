@@ -1,3 +1,4 @@
+import { createClientId } from "@/lib/clientId";
 import { Button } from "@/components/ui/button";
 import { emptyGalleryDetails, exposureFields, galleryDetailSummary, galleryCameraSuggestions, galleryLensSuggestions, type GalleryDetailDraft } from "@/lib/galleryDetails";
 import { readPhotoMetadata, type PhotoMetadata } from "@/lib/photoMetadata";
@@ -40,7 +41,7 @@ export function AdminBatchImageUpload({ onUploaded }: AdminBatchImageUploadProps
       const compressed = await Promise.all(sourceFiles.map(async file => {
         const metadata = await readPhotoMetadata(file);
         const image = await compressImageForUpload(file, optimizationMode);
-        return { ...image, metadata, id: crypto.randomUUID(), title: imageTitleFromFilename(file.name), previewUrl: URL.createObjectURL(image.file) };
+        return { ...image, metadata, id: createClientId(), title: imageTitleFromFilename(file.name), previewUrl: URL.createObjectURL(image.file) };
       }));
       setImages(current => { current.forEach(image => URL.revokeObjectURL(image.previewUrl)); return compressed; });
     } catch (error) {
